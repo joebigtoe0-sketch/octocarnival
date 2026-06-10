@@ -20,7 +20,7 @@ api.interceptors.response.use(
 
 export const authApi = {
   google:     token       => api.post('/auth/google', { token }),
-  email:      (email, pw, register) => api.post('/auth/email', { email, password: pw, register }),
+  email:      (email, pw, register, username) => api.post('/auth/email', { email, password: pw, register, username }),
   logout:     ()          => api.post('/auth/logout'),
   guestMerge: saveData    => api.post('/auth/guest-merge', { saveData }),
   me:         ()          => api.get('/auth/me'),

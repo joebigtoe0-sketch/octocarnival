@@ -28,12 +28,14 @@ app.use(cookieParser());
 app.use(express.json());
 
 // ---- Routes ----
-app.get('/health', (_req, res) => res.json({ ok: true }));
-app.use('/auth',   authRoutes);
-app.use('/game',   gameRoutes);
-app.use('/crew',   crewRoutes);
-app.use('/rats',   ratsRoutes);
-app.use('/shop',   shopRoutes);
+// /api prefix matches the frontend axios baseURL (VITE_API_URL + '/api')
+// Vite dev proxy strips /api before forwarding, so both dev and prod work.
+app.get('/health',       (_req, res) => res.json({ ok: true }));
+app.use('/api/auth',     authRoutes);
+app.use('/api/game',     gameRoutes);
+app.use('/api/crew',     crewRoutes);
+app.use('/api/rats',     ratsRoutes);
+app.use('/api/shop',     shopRoutes);
 
 // ---- Socket.io ----
 initSocket(io);

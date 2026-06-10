@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useUiStore }  from '../stores/uiStore.js';
 import { useGameStore } from '../stores/gameStore.js';
-import { authApi, gameApi } from '../api/client.js';
+import { authApi, gameApi, setAuthToken } from '../api/client.js';
 
 /* ──────────────────────────────────────────────
    Full-screen auth modal: Login / Register
@@ -39,6 +39,8 @@ export default function AuthModal() {
     const uid      = res.userId || res.id;
     const uname    = res.username || displayName || uid;
     const token    = res.token;
+    // Attach token synchronously so the blob load below goes out authenticated
+    setAuthToken(token);
     setUser(uid, uname, token);
 
     try {
@@ -65,7 +67,7 @@ export default function AuthModal() {
     setError(''); setLoading(true);
     try {
       const isRegister = authTab === 'register';
-      const res        = await authApi.email(email, password, isRegister);
+      const res        = await authApi.email(email, password, isRegister, isRegister ? username : undefined);
       await handleAuthSuccess(res, username || email.split('@')[0]);
     } catch (err) {
       setError(err.message || 'Something went wrong. Try again.');
