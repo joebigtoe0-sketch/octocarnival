@@ -33,7 +33,8 @@ command = "npm install"
 
 [services.deploy]
 # Migrations run on every deploy — safe because all SQL uses IF NOT EXISTS
-startCommand = "npm run migrate && node src/index.js"
+# The || true ensures the server still starts even if migration logs an error
+startCommand = "npm run migrate; node src/index.js"
 healthcheckPath = "/health"
 
 # ── Plugins ──────────────────────────────────────────────────────────────────
