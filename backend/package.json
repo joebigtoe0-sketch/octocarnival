@@ -1,0 +1,28 @@
+{
+  "name": "scraprats-backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "migrate": "node src/db/migrate.js",
+    "seed": "node src/db/seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "google-auth-library": "^9.15.1",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.2",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.3",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.0.5"
+  }
+}

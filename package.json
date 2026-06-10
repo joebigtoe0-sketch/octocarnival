@@ -1,0 +1,19 @@
+{
+  "name": "scraprats",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "start:backend": "npm run start --workspace=backend",
+    "crop-sprites": "node scripts/crop-sprites.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.0"
+  }
+}

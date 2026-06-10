@@ -1,0 +1,46 @@
+[build]
+builder = "nixpacks"
+
+# ── Frontend ─────────────────────────────────────────────────────────────────
+# Build-time env vars (VITE_*) must be set in the Railway frontend service:
+#   VITE_API_URL          = https://<your-backend>.railway.app
+#   VITE_GOOGLE_CLIENT_ID = <your Google OAuth client ID>
+[[services]]
+name = "frontend"
+source = "frontend"
+
+[services.build]
+command = "npm run build"
+
+[services.deploy]
+startCommand = "npx serve dist -s -l $PORT"
+healthcheckPath = "/"
+
+# ── Backend ──────────────────────────────────────────────────────────────────
+# Required env vars on the Railway backend service:
+#   NODE_ENV       = production
+#   DATABASE_URL   = (auto-injected by Railway Postgres plugin)
+#   REDIS_URL      = (auto-injected by Railway Redis plugin)
+#   JWT_SECRET     = <random 64-char string>
+#   FRONTEND_URL   = https://<your-frontend>.railway.app
+#   GOOGLE_CLIENT_ID = <your Google OAuth client ID>
+[[services]]
+name = "backend"
+source = "backend"
+
+[services.build]
+command = "npm install"
+
+[services.deploy]
+# Migrations run on every deploy — safe because all SQL uses IF NOT EXISTS
+startCommand = "npm run migrate && node src/index.js"
+healthcheckPath = "/health"
+
+# ── Plugins ──────────────────────────────────────────────────────────────────
+[[services]]
+name = "postgres"
+plugin = "postgresql"
+
+[[services]]
+name = "redis"
+plugin = "redis"
