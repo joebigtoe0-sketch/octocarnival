@@ -7,6 +7,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>ScrapRats — Sewer</title>
+  <!-- Prevent white flash while JS loads -->
+  <style>body{margin:0;background:#0e0e07}#root{width:100vw;height:100vh;overflow:hidden}</style>
+  <!-- Preload the two biggest images so the browser fetches them in parallel with JS -->
+  <link rel="preload" href="/assets/background.png"  as="image">
+  <link rel="preload" href="/assets/background2.png" as="image">
+  <link rel="preload" href="/assets/enemy1.png"      as="image">
+  <link rel="preload" href="/assets/enemy2.png"      as="image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Pixelify+Sans:wght@400;500;700&family=Oxanium:wght@400;600;700;800&family=Special+Elite&display=swap" rel="stylesheet">
