@@ -77,7 +77,7 @@ function RatCard({ rat, sellCharges, greed, isLeader, onEquip, onSell, onRename,
     <>
       <div className={`base-rat-card plate${isLeader ? ' base-rat-card--leader' : ''}`}>
         {/* Crown badge for current crew leader */}
-        {isLeader && <div className="base-rat-card__crown" title="Crew Leader">👑</div>}
+        {isLeader && <div className="base-rat-card__crown" title="Crew Leader"><img src="/assets/icons/crownicon.png" alt="Leader" style={{width:'20px',height:'20px',imageRendering:'pixelated'}} /></div>}
 
         {/* Name row */}
         <div className="base-rat-card__name-row">

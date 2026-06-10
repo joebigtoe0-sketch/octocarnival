@@ -166,7 +166,7 @@ function AchCard({ ach, unlocked, claimed, onClaim }) {
             CLAIM
           </button>
         ) : (
-          <div className="ach-card__lock">🔒</div>
+          <div className="ach-card__lock"><img src="/assets/icons/lockicon.png" alt="Locked" style={{width:'22px',height:'22px',imageRendering:'pixelated'}} /></div>
         )}
       </div>
     </div>
