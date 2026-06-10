@@ -480,12 +480,13 @@ export const useGameStore = create(
       },
 
       // ---- crew ----
-      hireCrew(crewId) {
+      hireCrew(crewId, effectiveInfluence) {
         const { crewCounts, coins, stats } = get();
         const def = CREW_DEFS.find(d => d.id === crewId);
         if (!def) return false;
         const rawCost = crewCost(def, crewCounts[crewId]);
-        const cost = applyInfluenceDiscount(rawCost, stats.influence);
+        const influence = effectiveInfluence ?? stats.influence;
+        const cost = applyInfluenceDiscount(rawCost, influence);
         if (coins < cost) return false;
         set(s => ({
           coins: s.coins - cost,
@@ -494,13 +495,14 @@ export const useGameStore = create(
         return true;
       },
 
-      levelUpCrew(crewId) {
+      levelUpCrew(crewId, effectiveInfluence) {
         const { crewLevels, coins, stats } = get();
         const def = CREW_DEFS.find(d => d.id === crewId);
         if (!def || def.type !== 'active') return false;
         const currentLevel = crewLevels[crewId];
         const rawCost = crewCost(def, currentLevel);
-        const cost = applyInfluenceDiscount(rawCost, stats.influence);
+        const influence = effectiveInfluence ?? stats.influence;
+        const cost = applyInfluenceDiscount(rawCost, influence);
         if (coins < cost) return false;
         const newLevel = currentLevel + 1;
         const skills = [...(get().crewSkills[crewId] || [])];

@@ -473,8 +473,8 @@ function CrewRoster({ crewCounts, crewLevels, coins, stats, onHire, onLevelUpCre
                     className={`crewrow__lvlbtn${canAfford ? ' crewrow__lvlbtn--can' : ''}`}
                     disabled={!canAfford}
                     onClick={() => {
-                      if (isActive) { playSound('crewLevel'); onLevelUpCrew(def.id); }
-                      else { playSound('crewLevel'); onHire(def.id); }
+                      if (isActive) { playSound('crewLevel'); onLevelUpCrew(def.id, influence); }
+                      else { playSound('crewLevel'); onHire(def.id, influence); }
                     }}
                   >
                     <span className="crewrow__lvlbtn-label">
