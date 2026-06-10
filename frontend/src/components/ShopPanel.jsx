@@ -56,8 +56,8 @@ const DIAMOND_BOX_PRICES = {
   mythic:    100,
 };
 
-// Extra sell slot: starts at 2 diamonds, doubles each purchase. Max 7 purchases.
-const SLOT_BASE = 2;
+// Extra sell slot / base slot: starts at 5 diamonds, doubles each purchase. Max 7 purchases.
+const SLOT_BASE = 5;
 const SLOT_MAX  = 7; // 3 start + 7 = 10 max
 
 function slotPrice(bought) {
