@@ -127,10 +127,11 @@ function CollectionTab({ discoveredTraits }) {
         <div className="gallery-detail">
           <div className="gallery-detail__title">{slotDef.slotName}</div>
           <div className="gallery-grid">
-            {items.map((item, idx) => {
-              const key   = `${item.slotIdx}_${item.rarity}_${item.name}`;
-              const found = foundKeys.has(key);
-              return <ItemCard key={idx} item={item} found={found} />;
+            {items.map((item) => {
+              const itemKey = `${item.slotName}_${item.rarity}_${item.variantSeed ?? item.name}`;
+              const foundKey = `${item.slotIdx}_${item.rarity}_${item.name}`;
+              const found = foundKeys.has(foundKey);
+              return <ItemCard key={itemKey} item={item} found={found} />;
             })}
           </div>
         </div>
