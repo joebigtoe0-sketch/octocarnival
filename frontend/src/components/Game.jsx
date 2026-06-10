@@ -65,6 +65,9 @@ export default function Game() {
   const [activeBoosts, setActiveBoosts] = useState({});
   const idRef          = useRef(1);
   const nid            = () => idRef.current++;
+  // Guard: prevents the 250ms tick from triggering the death sequence multiple
+  // times during the 500ms window between kill and the next spawnEnemy() call.
+  const enemyDeadRef    = useRef(false);
   // Refs so particle callbacks never go stale
   const particleExpRef  = useRef({});   // id → exp amount
   const collectedRef    = useRef(new Set());
@@ -213,12 +216,19 @@ export default function Game() {
       const paused = s.pendingLevelUp || !!ui.lootbox;
 
       // ── enemy-death check (merged in to avoid a separate useEffect) ──
+      // enemyDeadRef guards against the 250ms tick firing this 2-3 times during
+      // the 500ms window between killEnemy() and the next spawnEnemy() call.
       if (s.enemyHp <= 0 && s.enemyMaxHp > 0 && !paused) {
+        if (enemyDeadRef.current) return;
+        enemyDeadRef.current = true;
         playSound('enemyPop');
         const result = s.killEnemy();
         if (result?.lootboxDropped) spawnDrop(result.lootboxDropped);
         if (result?.expAmount)      spawnExpParticles(result.expAmount);
-        setTimeout(() => useGameStore.getState().spawnEnemy(), 500);
+        setTimeout(() => {
+          enemyDeadRef.current = false;
+          useGameStore.getState().spawnEnemy();
+        }, 500);
         return;
       }
 
