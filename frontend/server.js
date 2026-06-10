@@ -1,6 +1,10 @@
-const http = require('http');
-const fs   = require('fs');
-const path = require('path');
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
 const DIST = path.join(__dirname, 'dist');
@@ -25,10 +29,9 @@ const MIME = {
 };
 
 http.createServer((req, res) => {
-  let urlPath = req.url.split('?')[0];
-  let filePath = path.join(DIST, urlPath);
+  let urlPath   = req.url.split('?')[0];
+  let filePath  = path.join(DIST, urlPath);
 
-  // SPA fallback: if file doesn't exist, serve index.html
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(DIST, 'index.html');
   }
@@ -37,11 +40,7 @@ http.createServer((req, res) => {
   const mime = MIME[ext] || 'application/octet-stream';
 
   fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not found');
-      return;
-    }
+    if (err) { res.writeHead(404); res.end('Not found'); return; }
     res.writeHead(200, { 'Content-Type': mime });
     res.end(data);
   });
