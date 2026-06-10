@@ -245,7 +245,7 @@ export default function Game() {
       if (dpsPerTick > 0) s.applyDamage(dpsPerTick);
     }, 250);
     return () => clearInterval(h);
-  }, [spawnDrop, spawnExpParticles]); // spawnDrop/spawnExpParticles are stable useCallbacks
+  }, []); // [] — uses getState() for store; spawnDrop/spawnExpParticles captured by closure (declared later in component body — TDZ-safe via closure, not deps array)
 
   // ---- persist lastTickTime every 10s (offline progress tracking) ----
   // Previously called stampTick() every 250ms → 4 Zustand writes/sec → 4 re-renders/sec.
