@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useGameStore } from '../stores/gameStore.js';
 import { useUiStore }   from '../stores/uiStore.js';
@@ -41,11 +41,21 @@ export default function Game() {
   const store = useGameStore();
   const ui    = useUiStore();
 
-  // Merge base stats with the crew leader's trait bonuses
-  const leaderBoosts   = computeLeaderBoosts(store.baseRats, store.crewLeaderId);
-  const effectiveStats = Object.fromEntries(
-    Object.keys(store.stats).map(k => [k, (store.stats[k] || 0) + (leaderBoosts[k] || 0)])
+  // Merge base stats with the crew leader's trait bonuses — memoized so it
+  // only recalculates when stats / baseRats / crewLeaderId actually change.
+  const leaderBoosts = useMemo(
+    () => computeLeaderBoosts(store.baseRats, store.crewLeaderId),
+    [store.baseRats, store.crewLeaderId]
   );
+  const effectiveStats = useMemo(
+    () => Object.fromEntries(
+      Object.keys(store.stats).map(k => [k, (store.stats[k] || 0) + (leaderBoosts[k] || 0)])
+    ),
+    [store.stats, leaderBoosts]
+  );
+  // Keep a ref so stable interval callbacks always see the latest value
+  const effectiveStatsRef = useRef(effectiveStats);
+  useEffect(() => { effectiveStatsRef.current = effectiveStats; }, [effectiveStats]);
 
   // ---- ephemeral visual state ----
   const [floats,       setFloats]       = useState([]);
@@ -187,20 +197,34 @@ export default function Game() {
     return () => { clearTimeout(t3); clearTimeout(t30); };
   }, [store.isGuest]);
 
-  // ---- sell charge recharge (250ms tick) ----
+  // ---- sell charge recharge (250ms tick) — stable, reads state directly ----
   useEffect(() => {
-    const h = setInterval(() => store.tickSellCharge(), 250);
+    const h = setInterval(() => useGameStore.getState().tickSellCharge(), 250);
     return () => clearInterval(h);
   }, []);
 
-  // ---- crew DPS tick (250ms, paused during level-up) ----
+  // ---- crew DPS tick + enemy-death detection (250ms, single stable interval) ----
+  // Uses getState() so it always reads the latest store values without creating
+  // a new interval whenever crew counts or stats change (no stale closures).
   useEffect(() => {
     const h = setInterval(() => {
-      store.stampTick();
-      if (gamePaused) return;
-      if (store.enemyHp <= 0) return;
+      const s  = useGameStore.getState();
+      const ui = useUiStore.getState();
+      const paused = s.pendingLevelUp || !!ui.lootbox;
 
-      // Build per-crew multiplier map from currently active boosts
+      // ── enemy-death check (merged in to avoid a separate useEffect) ──
+      if (s.enemyHp <= 0 && s.enemyMaxHp > 0 && !paused) {
+        playSound('enemyPop');
+        const result = s.killEnemy();
+        if (result?.lootboxDropped) spawnDrop(result.lootboxDropped);
+        if (result?.expAmount)      spawnExpParticles(result.expAmount);
+        setTimeout(() => useGameStore.getState().spawnEnemy(), 500);
+        return;
+      }
+
+      if (paused || s.enemyHp <= 0) return;
+
+      // ── DPS damage ──
       const now = Date.now();
       const skillBoosts = {};
       setActiveBoosts(prev => {
@@ -208,38 +232,28 @@ export default function Game() {
         for (const [id, boost] of Object.entries(prev)) {
           if (boost.expiresAt > now) {
             next[id] = boost;
-            if (boost.allCrew) {
-              skillBoosts['plague_knight_all'] = boost.multiplier;
-            } else {
-              skillBoosts[id] = boost.multiplier;
-            }
+            if (boost.allCrew) skillBoosts['plague_knight_all'] = boost.multiplier;
+            else               skillBoosts[id] = boost.multiplier;
           }
         }
         return next;
       });
 
-      const baseDps    = totalCrewDps(store.crewCounts, store.crewLevels, effectiveStats.dps * 0.25, skillBoosts, store.unlockedMilestones, store.prestigeLevel);
-      const dpsPerTick = baseDps * (store.itemDpsMul || 1.0) / 4;
-      if (dpsPerTick > 0) store.applyDamage(dpsPerTick);
+      const eff      = effectiveStatsRef.current;
+      const baseDps  = totalCrewDps(s.crewCounts, s.crewLevels, eff.dps * 0.25, skillBoosts, s.unlockedMilestones, s.prestigeLevel);
+      const dpsPerTick = baseDps * (s.itemDpsMul || 1.0) / 4;
+      if (dpsPerTick > 0) s.applyDamage(dpsPerTick);
     }, 250);
     return () => clearInterval(h);
-  }, [store.crewCounts, store.crewLevels, store.stats.dps, gamePaused]);
+  }, [spawnDrop, spawnExpParticles]); // spawnDrop/spawnExpParticles are stable useCallbacks
 
-  // ---- watch for enemyHp hitting 0 ----
+  // ---- persist lastTickTime every 10s (offline progress tracking) ----
+  // Previously called stampTick() every 250ms → 4 Zustand writes/sec → 4 re-renders/sec.
+  // 10s is plenty accurate for offline catch-up.
   useEffect(() => {
-    if (store.enemyHp <= 0 && store.enemyMaxHp > 0 && !gamePaused) {
-      playSound('enemyPop');
-      const result = store.killEnemy();
-      if (result?.lootboxDropped) {
-        spawnDrop(result.lootboxDropped);
-      }
-      if (result?.expAmount) {
-        spawnExpParticles(result.expAmount);
-      }
-      // Short pause before the next enemy appears
-      setTimeout(() => useGameStore.getState().spawnEnemy(), 500);
-    }
-  }, [store.enemyHp]);
+    const h = setInterval(() => useGameStore.getState().stampTick(), 10_000);
+    return () => clearInterval(h);
+  }, []);
 
   // ---- visual spawners ----
   const spawnFloat = useCallback((x, y, text, type) => {
