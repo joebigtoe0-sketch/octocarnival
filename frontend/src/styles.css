@@ -29,7 +29,8 @@
 
 *{ box-sizing: border-box; }
 html,body{
-  margin:0; height:100%; background:#000; overflow:hidden;
+  margin:0; background:#000;
+  overflow-x:hidden;           /* no side-scroll */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -38,14 +39,15 @@ body{
   -webkit-font-smoothing: none;
   color:#f3f6ec;
   user-select:none;
-  overscroll-behavior: none;
+  /* allow vertical scroll so landing sections are reachable */
 }
 img{ image-rendering: pixelated; }
 
 /* ---- scaler / cover scale ---- */
-#root, .scaler{ width:100%; height:100%; height:100dvh; }
+#root{ width:100%; }
+.scaler{ width:100%; height:100%; height:100dvh; }
 .scaler{
-  position:fixed; inset:0;
+  position:fixed; inset:0; z-index:0;  /* landing sections (z-index:1) render on top when scrolled */
   display:flex; align-items:center; justify-content:center;
   overflow:hidden;
   background:var(--ink);
@@ -2119,12 +2121,10 @@ button, .navbtn, .hirebtn, .ratbtn, .sellbtn, .gearbtn, .itemstab, .popup__close
 }
 .settings-social-btn {
   display: flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px;
-  background: #111a0b; border: 1px solid #2e3d20; border-radius: 6px;
-  transition: border-color .15s, background .15s;
+  opacity: .85; transition: opacity .15s, transform .15s;
 }
-.settings-social-btn:hover { background: #1e2e12; border-color: #5a7a36; }
-.settings-social-btn img { width: 20px; height: 20px; image-rendering: pixelated; }
+.settings-social-btn:hover { opacity: 1; transform: scale(1.08); }
+.settings-social-btn img { width: 32px; height: 32px; image-rendering: pixelated; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    LANDING PAGE
@@ -2134,6 +2134,7 @@ button, .navbtn, .hirebtn, .ratbtn, .sellbtn, .gearbtn, .itemstab, .popup__close
   background: #0e0e07;
   color: #c8e6a0;
   font-family: var(--fnt-body, 'Oxanium', sans-serif);
+  position: relative; z-index: 1; /* renders above the fixed .scaler game canvas */
 }
 .lp-container {
   max-width: 1100px;
@@ -2220,13 +2221,11 @@ button, .navbtn, .hirebtn, .ratbtn, .sellbtn, .gearbtn, .itemstab, .popup__close
 }
 .lp-social-icon {
   display: flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px;
-  background: #111a0b; border: 1px solid #2e3d20; border-radius: 8px;
-  transition: border-color .15s, background .15s;
+  opacity: .8; transition: opacity .15s, transform .15s;
 }
-.lp-social-icon:hover { background: #1e2e12; border-color: #5a7a36; }
+.lp-social-icon:hover { opacity: 1; transform: scale(1.1); }
 .lp-social-icon img {
-  width: 24px; height: 24px; image-rendering: pixelated;
+  width: 36px; height: 36px; image-rendering: pixelated;
 }
 
 /* ── Sewer cards grid ── */
