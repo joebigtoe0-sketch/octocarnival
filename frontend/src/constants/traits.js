@@ -295,6 +295,10 @@ export function rollLootTrait(luck = 0, rate = 0, accountLevel = 1) {
   return null;
 }
 
+function showcaseTraitKey(t) {
+  return `${t.slotIdx}|${t.rarity}|${t.name}|${t.variantSeed}`;
+}
+
 /** Random trait for landing-page showcase (always returns, no carrier check). */
 export function rollShowcaseTrait(accountLevel = 50) {
   const weights = BASE_RARITY_WEIGHTS.filter(
@@ -324,6 +328,29 @@ export function rollShowcaseTrait(accountLevel = 50) {
     }
   }
   return null;
+}
+
+/** Like rollShowcaseTrait but never returns a trait already in `existing`. */
+export function rollDistinctShowcaseTrait(existing = [], accountLevel = 50) {
+  const keys = new Set(existing.filter(Boolean).map(showcaseTraitKey));
+  for (let i = 0; i < 40; i++) {
+    const t = rollShowcaseTrait(accountLevel);
+    if (t && !keys.has(showcaseTraitKey(t))) return t;
+  }
+  const t = rollShowcaseTrait(accountLevel);
+  if (!t) return null;
+  let seed = t.variantSeed;
+  const def  = SLOT_DEFS[t.slotIdx];
+  const tier = def.tiers[t.rarity];
+  while (keys.has(showcaseTraitKey(t)) && seed < 9960) {
+    seed++;
+    const name = tier.variants
+      ? tier.variants[seed % tier.variants.length]
+      : tier.name;
+    t.name = name;
+    t.variantSeed = seed;
+  }
+  return t;
 }
 
 export function calcSellValue(traits, greedLevel = 0) {
