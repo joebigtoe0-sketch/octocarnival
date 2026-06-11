@@ -5,6 +5,7 @@ builder = "nixpacks"
 # Build-time env vars (VITE_*) must be set in the Railway frontend service:
 #   VITE_API_URL          = https://<your-backend>.railway.app
 #   VITE_GOOGLE_CLIENT_ID = <your Google OAuth client ID>
+#   VITE_SITE_URL         = https://<your-frontend>.railway.app  (link previews on X/TG)
 [[services]]
 name = "frontend"
 source = "frontend"

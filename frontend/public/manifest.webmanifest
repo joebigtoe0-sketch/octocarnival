@@ -1,10 +1,24 @@
 {
   "name": "ScrapRats",
   "short_name": "ScrapRats",
-  "description": "Sewer idle-clicker — smash, loot, hire your crew.",
+  "description": "Sewer idle-clicker — smash enemies, hire your crew, hoard loot. Free in your browser.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0e0e07",
   "theme_color": "#0e0e07",
-  "orientation": "any"
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/assets/scrapratslogo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/scrapratslogo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }

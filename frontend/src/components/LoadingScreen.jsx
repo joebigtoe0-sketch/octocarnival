@@ -22,6 +22,7 @@ const CRITICAL_IMAGES = [
   '/assets/icons/exp.png',
   '/assets/icons/crownicon.png',
   '/assets/icons/lockicon.png',
+  '/assets/scrapratslogo.png',
 ];
 
 const TOTAL = CRITICAL_IMAGES.length;
@@ -69,10 +70,12 @@ export default function LoadingScreen({ onReady }) {
   return (
     <div className={`loading-screen${fading ? ' loading-screen--fade' : ''}`}>
       <div className="loading-screen__inner">
-        <div className="loading-screen__logo">
-          <span className="loading-screen__logo-scrap">SCRAP</span>
-          <span className="loading-screen__logo-rats">RATS</span>
-        </div>
+        <img
+          className="loading-screen__logo-img"
+          src="/assets/scrapratslogo.png"
+          alt="ScrapRats"
+          draggable={false}
+        />
         <div className="loading-screen__sub">Entering the sewer…</div>
 
         <div className="loading-screen__bar-wrap">

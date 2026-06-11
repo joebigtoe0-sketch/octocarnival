@@ -3,9 +3,8 @@ import LegalModal from './LegalModal.jsx';
 import AboutShuffleRat from './AboutShuffleRat.jsx';
 
 // ── Official links ──────────────────────────────────────────────────────────
-// Paste the real contract address here at launch — every pump.fun link and the
-// contract container update automatically from this one constant.
-export const CONTRACT_ADDRESS = 'PASTE-YOUR-PUMPFUN-CA-HERE-xxxxxxxxxxxxxxxxxxpump';
+// Single source of truth — every pump.fun link and the contract box use this.
+export const CONTRACT_ADDRESS = '6wDhSCLLZRQMJQwafEtoyBz4u9tQnYDwJMs98cYHpump';
 
 export const SOCIAL_LINKS = {
   discord: 'https://discord.gg/h6Qdw3aNWK',
