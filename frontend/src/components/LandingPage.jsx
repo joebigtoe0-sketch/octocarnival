@@ -2,12 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import LegalModal from './LegalModal.jsx';
 
 // ── Official links ──────────────────────────────────────────────────────────
+// Paste the real contract address here at launch — every pump.fun link and the
+// contract container update automatically from this one constant.
+export const CONTRACT_ADDRESS = 'PASTE-YOUR-PUMPFUN-CA-HERE-xxxxxxxxxxxxxxxxxxpump';
+
 export const SOCIAL_LINKS = {
   discord: 'https://discord.gg/h6Qdw3aNWK',
   twitter: 'https://x.com/scrapratsfun',
-  pump:    'https://pump.fun/coin/YOUR_CONTRACT_ADDRESS',
+  pump:    `https://pump.fun/coin/${CONTRACT_ADDRESS}`,
 };
-export const CONTRACT_ADDRESS = 'PASTE-YOUR-PUMPFUN-CA-HERE-xxxxxxxxxxxxxxxxxxpump';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const SEWER_CARDS = [
