@@ -206,7 +206,8 @@ function RollingPhase({ rarity, reward, onReveal }) {
 }
 
 // ── Phase: Reveal overlay — floats above the whole lb-overlay ────────────────
-function RevealOverlay({ reward, rarity, onClaim, onDiscard }) {
+function RevealOverlay({ reward, rarity, onClaim, onSell }) {
+  const sellValue = Math.floor(reward.coinValue * 0.5);
   return (
     <div className="lb-reveal" onClick={e => e.stopPropagation()}>
       <div
@@ -224,7 +225,9 @@ function RevealOverlay({ reward, rarity, onClaim, onDiscard }) {
         <div className="lb-reveal__slot">{reward.slotName}</div>
         <div className="lb-reveal__value">⬡ {fmt(reward.coinValue)} coins</div>
         <button className="lb-btn lb-btn--loot" onClick={() => { playSound('uiClick'); onClaim(); }}>LOOT IT</button>
-        <button className="lb-discard" onClick={() => { playSound('uiClick'); onDiscard(); }}>discard loot</button>
+        <button className="lb-discard" onClick={() => { playSound('coins'); onSell(); }}>
+          quick sell · ⬡ {fmt(sellValue)}
+        </button>
       </div>
     </div>
   );
@@ -237,6 +240,7 @@ export default function LootboxModal({ onClaimTrait }) {
   const startRoll  = useUiStore(s => s.startLootboxRoll);
   const revealBox  = useUiStore(s => s.revealLootbox);
   const consume    = useGameStore(s => s.consumeLootbox);
+  const addCoins   = useGameStore(s => s.addCoins);
 
   if (!lootbox) return null;
   const { phase, rarity, reward } = lootbox;
@@ -275,7 +279,7 @@ export default function LootboxModal({ onClaimTrait }) {
           reward={reward}
           rarity={rarity}
           onClaim={() => { onClaimTrait(reward); closeFlow(); }}
-          onDiscard={closeFlow}
+          onSell={() => { addCoins(Math.floor(reward.coinValue * 0.5)); closeFlow(); }}
         />
       )}
     </div>
