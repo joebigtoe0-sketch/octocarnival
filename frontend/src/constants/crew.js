@@ -15,7 +15,7 @@ export const CREW_DEFS = [
     portrait: '/assets/scrapper.png',
     flavour: 'Your clicker. Levels up to boost click damage per hit.',
     type: 'active',
-    levelCostBase: 75,
+    levelCostBase: 38,
     levelCostMul:  1.08,
     milestones: [
       { level: 10,  type: 'active',  icon: '/assets/icons/clickfrenzyskill.png', name: 'Frenzy',
@@ -35,7 +35,7 @@ export const CREW_DEFS = [
     portrait: '/assets/gutter-pup.png',
     flavour: 'Tiny scrappy pup gnawing at ankles.',
     type: 'passive',
-    baseCost: 188,
+    baseCost: 94,
     costMul:  1.085,
     dps: 8,
     milestones: [
@@ -55,7 +55,7 @@ export const CREW_DEFS = [
     portrait: '/assets/mudlark.png',
     flavour: 'Sewage diver who weaponised slime.',
     type: 'passive',
-    baseCost: 1125,
+    baseCost: 563,
     costMul:  1.085,
     dps: 60,
     milestones: [
@@ -75,7 +75,7 @@ export const CREW_DEFS = [
     portrait: '/assets/pipe-rat.png',
     flavour: 'Tunnel runner, fast and wiry, hits hard.',
     type: 'passive',
-    baseCost: 6000,
+    baseCost: 3000,
     costMul:  1.085,
     dps: 400,
     milestones: [
@@ -96,7 +96,7 @@ export const CREW_DEFS = [
     portrait: '/assets/sludge-baron.png',
     flavour: 'Fat lazy brawler who somehow devastates.',
     type: 'passive',
-    baseCost: 30000,
+    baseCost: 15000,
     costMul:  1.085,
     dps: 2800,
     milestones: [
@@ -116,7 +116,7 @@ export const CREW_DEFS = [
     portrait: '/assets/plague-knight.png',
     flavour: 'Diseased, ancient, utterly devastating.',
     type: 'passive',
-    baseCost: 135000,
+    baseCost: 67500,
     costMul:  1.085,
     dps: 20000,
     milestones: [

@@ -109,9 +109,9 @@ export function killsPerLevel(lvl) {
 function enemyMaxHpFor(accountLevel) {
   const raw = accountLevel - 1;
   // Levels 1-30: normal 1.22× growth.
-  // Levels 30+: each extra level adds 83% of the normal exponent step,
-  // giving ~1.9M HP at level 60 (down from 5.4M original).
-  const exp = raw <= 29 ? raw : 29 + (raw - 29) * 0.83;
+  // Levels 30+: each extra level adds 77% of the normal exponent step,
+  // giving ~1.3M HP at level 60 and ~65M at level 86 (was ~130M).
+  const exp = raw <= 29 ? raw : 29 + (raw - 29) * 0.77;
   const baseHp = Math.floor(120 * Math.pow(1.22, exp));
   return Math.max(1, Math.floor(baseHp / enemyCountScale(accountLevel)));
 }
@@ -141,7 +141,7 @@ export const useGameStore = create(
   persist(
     (set, get) => ({
       // ---- currencies ----
-      coins:    300,
+      coins:    0,
       diamonds: 0,
 
       // ---- EXP / leveling ----
@@ -838,7 +838,7 @@ export const useGameStore = create(
 
         set({
           // full wipe
-          coins:           300,
+          coins:           0,
           totalExp:        0,
           expInLevel:      0,
           level:           1,
@@ -1006,7 +1006,7 @@ export const useGameStore = create(
       // ---- reset ----
       resetAll() {
         set({
-          coins: 300,
+          coins: 0,
           diamonds: 0,
           totalExp: 0, expInLevel: 0, level: 1,
           stats: { luck: 0, cardLuck: 0, rate: 0, speed: 0, greed: 0, stealth: 0, dps: 0, clickPower: 0, influence: 0 },
