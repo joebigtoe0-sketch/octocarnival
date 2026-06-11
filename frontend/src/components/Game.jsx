@@ -37,6 +37,35 @@ function fmtNum(n) {
 
 window.fmtNum = fmtNum;
 
+const STAT_LABELS = {
+  luck: 'Luck', cardLuck: 'Card Luck', rate: 'Rate', speed: 'Speed',
+  greed: 'Greed', stealth: 'Stealth', dps: 'Crew DPS',
+  clickPower: 'Click Power', influence: 'Influence',
+  wild_crew: 'All Crew Lvl', wild_reroll: 'Reroll', wild_lootbox: 'Rare Lootbox', wild_exp: 'EXP',
+};
+
+function showOfflineToast(result) {
+  if (!result || result.levelsGained === 0) return;
+  const { levelsGained, kills, appliedCards = [], elapsedSec } = result;
+  const hrs  = Math.floor(elapsedSec / 3600);
+  const mins = Math.floor((elapsedSec % 3600) / 60);
+  const timeStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+
+  // Build a short stat-gain summary from applied cards
+  const gained = {};
+  for (const card of appliedCards) {
+    const label = STAT_LABELS[card.stat] || card.stat;
+    gained[label] = (gained[label] || 0) + (card.value || 1);
+  }
+  const statLines = Object.entries(gained).map(([k, v]) => `+${v} ${k}`).join(' · ');
+
+  useUiStore.getState().addToast({
+    rarity: levelsGained >= 5 ? 'epic' : 'rare',
+    name: `AFK ${timeStr}: +${levelsGained} levels, ${kills} kills`,
+    slotName: statLines || 'Cards auto-applied',
+  });
+}
+
 export default function Game() {
   const store = useGameStore();
   const ui    = useUiStore();
@@ -175,17 +204,17 @@ export default function Game() {
 
   // ---- on mount: catch up offline progress, then ensure an enemy exists ----
   useEffect(() => {
-    store.processOfflineProgress();
-    if (store.enemyMaxHp === 0) {
-      store.spawnEnemy();
-    }
+    const result = store.processOfflineProgress();
+    if (store.enemyMaxHp === 0) store.spawnEnemy();
+    showOfflineToast(result);
   }, []);
 
   // ---- catch up whenever the tab becomes visible again ----
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState === 'visible') {
-        store.processOfflineProgress();
+        const result = store.processOfflineProgress();
+        showOfflineToast(result);
       }
     };
     document.addEventListener('visibilitychange', onVisible);

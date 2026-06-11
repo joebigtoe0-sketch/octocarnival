@@ -777,16 +777,47 @@ export const useGameStore = create(
           enemyLevel:   acctLvl,
         };
 
-        // Queue a single level-up card pick if levels were gained
-        if (levelsGained > 0 && !s.pendingLevelUp) {
-          const cards = drawCards(s.prestigeLevel, 3, s.stats.cardLuck || 0);
-          updates.pendingLevelUp     = true;
-          updates.pendingCards       = cards;
-          updates.levelUpRerollsLeft = 1 + s.storedRerolls;
+        // Auto-apply one random card per level gained offline — no modal needed.
+        // The player's stats are silently boosted; a summary toast is shown by Game.jsx.
+        const appliedCards = [];
+        if (levelsGained > 0) {
+          let newStats      = { ...s.stats };
+          let newCrewLevels = { ...s.crewLevels };
+          let extraRerolls  = s.storedRerolls;
+
+          for (let i = 0; i < levelsGained; i++) {
+            const drawn = drawCards(s.prestigeLevel, 3, newStats.cardLuck || 0);
+            const card  = drawn[Math.floor(Math.random() * drawn.length)];
+            appliedCards.push(card);
+
+            switch (card.stat) {
+              case 'luck': case 'cardLuck': case 'rate': case 'speed':
+              case 'greed': case 'stealth': case 'dps': case 'clickPower': case 'influence':
+                newStats = { ...newStats, [card.stat]: (newStats[card.stat] || 0) + card.value };
+                break;
+              case 'wild_crew':
+                newCrewLevels = Object.fromEntries(
+                  Object.entries(newCrewLevels).map(([id, lv]) => [id, lv + card.value])
+                );
+                break;
+              case 'wild_reroll':
+                extraRerolls += card.value;
+                break;
+              case 'wild_lootbox':
+                newLootboxes.rare = (newLootboxes.rare || 0) + 1;
+                break;
+              default: break;
+            }
+          }
+
+          updates.stats        = newStats;
+          updates.crewLevels   = newCrewLevels;
+          updates.storedRerolls = extraRerolls;
+          updates.lootboxes    = newLootboxes;
         }
 
         set(updates);
-        return { kills, levelsGained, elapsedSec: Math.round(elapsedSec) };
+        return { kills, levelsGained, appliedCards, elapsedSec: Math.round(elapsedSec) };
       },
 
       // ---- prestige ----
