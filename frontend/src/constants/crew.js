@@ -224,5 +224,5 @@ export function scrapperClickBonus(scrapperLevel, unlockedMilestones = {}) {
  * (~8% compounding) so clicking scales into the late game.
  */
 export function clickDamageBase(scrapperLevel = 0) {
-  return Math.floor(5 + 5 * scrapperLevel * Math.pow(1.08, scrapperLevel));
+  return Math.floor(5 + 2.5 * scrapperLevel * Math.pow(1.08, scrapperLevel));
 }
