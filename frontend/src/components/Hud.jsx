@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { CREW_DEFS, crewCost, totalCrewDps, clickDamageBase } from '../constants/crew.js';
 import { RARITY_COLORS } from '../constants/traits.js';
 import { ACHIEVEMENTS } from '../constants/achievements.js';
-import { useGameStore } from '../stores/gameStore.js';
+import { useGameStore, RECHARGE_SEC } from '../stores/gameStore.js';
 import RatSprite from './RatSprite.jsx';
 import { playSound } from '../audio.js';
 
@@ -541,7 +541,15 @@ function InlineName({ value, onSave, className }) {
 
 function YourRatPanel({ name, equippedCount, sellValue, sellCharges, maxSellCharges, onSell, onSendBase, traits, baseIsFull, onRename }) {
   const [shake, setShake] = useState(false);
+  const [hoverSell, setHoverSell] = useState(false);
   const canSell = sellCharges >= 1 && sellValue > 0;
+
+  // Live countdown to the next charge (panel re-renders 4×/s from the recharge tick)
+  const stealth     = useGameStore(s => s.stats.stealth);
+  const rechargeMul = useGameStore(s => s.sellRechargeMul);
+  const noCharges   = sellCharges < 1;
+  const speedBonus  = (1 + (stealth || 0) / 100) * (rechargeMul || 1);
+  const secsToNext  = Math.max(1, Math.ceil(((1 - (sellCharges % 1)) * RECHARGE_SEC) / speedBonus));
 
   const handleSell = () => {
     if (canSell) { playSound('coins'); onSell(); }
@@ -577,9 +585,20 @@ function YourRatPanel({ name, equippedCount, sellValue, sellCharges, maxSellChar
           <button className="ratbtn" onClick={() => { if (!baseIsFull) playSound('sendBase'); onSendBase(); }} disabled={baseIsFull} title={baseIsFull ? 'Base is full' : undefined}>
             {baseIsFull ? 'BASE FULL' : 'SEND TO BASE'}
           </button>
-          <button className={`sellbtn${shake ? ' shake' : ''}`} onClick={handleSell} disabled={!canSell}>
-            SELL <CoinIcon cls="ico" /> {fmtN(sellValue)}
-          </button>
+          <div
+            className="sellbtn-wrap"
+            onMouseEnter={() => setHoverSell(true)}
+            onMouseLeave={() => setHoverSell(false)}
+          >
+            <button className={`sellbtn${shake ? ' shake' : ''}`} onClick={handleSell} disabled={!canSell}>
+              SELL <CoinIcon cls="ico" /> {fmtN(sellValue)}
+            </button>
+            {hoverSell && noCharges && (
+              <div className="sellbtn-tip">
+                No sell charges left!{'\n'}Next charge ready in {secsToNext}s
+              </div>
+            )}
+          </div>
           <div className="charges">
             {Array.from({ length: maxSellCharges }, (_, i) => {
               const f = Math.max(0, Math.min(1, sellCharges - i));

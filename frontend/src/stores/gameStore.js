@@ -57,7 +57,7 @@ function generateBounties() {
 
 const SELL_MAX     = 3;
 const SELL_MAX_CAP = 10;
-const RECHARGE_SEC = 120;
+export const RECHARGE_SEC = 120;
 const BASE_CAPACITY_START = 3;
 const BASE_CAPACITY_CAP   = 10;
 
