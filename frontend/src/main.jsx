@@ -4,6 +4,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import './styles.css';
 import Game          from './components/Game.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
+import LandingPage   from './components/LandingPage.jsx';
 import { useGameStore } from './stores/gameStore.js';
 import { setAuthToken } from './api/client.js';
 
@@ -15,9 +16,15 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 function AppRoot() {
   const [ready, setReady] = useState(false);
-  return ready
-    ? <Game />
-    : <LoadingScreen onReady={() => setReady(true)} />;
+  if (!ready) return <LoadingScreen onReady={() => setReady(true)} />;
+  return (
+    <div className="sr-page">
+      <section className="sr-game-section" id="game">
+        <Game />
+      </section>
+      <LandingPage />
+    </div>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

@@ -8,7 +8,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>ScrapRats — Sewer</title>
   <!-- Prevent white flash while JS loads -->
-  <style>body{margin:0;background:#0e0e07}#root{width:100vw;height:100vh;overflow:hidden}</style>
+  <style>
+    body{margin:0;background:#0e0e07;overflow-x:hidden}
+    /* root scrolls naturally; the game section contains its own overflow */
+    #root{width:100vw}
+    .sr-page{width:100%;min-height:100vh}
+    .sr-game-section{width:100vw;height:100vh;overflow:hidden;position:relative}
+  </style>
   <!-- Preload the two biggest images so the browser fetches them in parallel with JS -->
   <link rel="preload" href="/assets/background.png"  as="image">
   <link rel="preload" href="/assets/background2.png" as="image">
