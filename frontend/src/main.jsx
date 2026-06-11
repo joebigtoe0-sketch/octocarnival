@@ -7,10 +7,12 @@ import LoadingScreen from './components/LoadingScreen.jsx';
 import LandingPage   from './components/LandingPage.jsx';
 import { useGameStore } from './stores/gameStore.js';
 import { setAuthToken } from './api/client.js';
+import { installDevCheat } from './devCheat.js';
 
 // Reattach JWT from persisted store on refresh (cross-domain Railway setup)
 const { token } = useGameStore.getState();
 if (token) setAuthToken(token);
+installDevCheat();
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
