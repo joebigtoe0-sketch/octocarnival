@@ -1,5 +1,6 @@
 import express    from 'express';
 import compression from 'compression';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
@@ -8,6 +9,25 @@ const __dirname  = path.dirname(__filename);
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+
+// Proxy /api/* → backend at runtime (no build-time env var needed)
+// Set BACKEND_URL in Railway frontend service vars, e.g. https://scraprats-backend-production.up.railway.app
+const BACKEND_URL = process.env.BACKEND_URL;
+if (BACKEND_URL) {
+  app.use('/api', createProxyMiddleware({
+    target: BACKEND_URL,
+    changeOrigin: true,
+    on: {
+      error: (err, _req, res) => {
+        console.error('[proxy] error', err.message);
+        res.status(502).json({ error: 'Backend unreachable' });
+      },
+    },
+  }));
+  console.log(`[proxy] /api → ${BACKEND_URL}`);
+} else {
+  console.warn('[proxy] BACKEND_URL not set — /api calls will 404 in production');
+}
 
 // Gzip everything (JS bundle shrinks ~70%, HTML/CSS ~60%)
 app.use(compression());

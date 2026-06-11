@@ -1,9 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // In production VITE_API_URL is set to the Railway backend URL.
-  // In dev the Vite proxy rewrites /api → localhost:3001 so we keep '/api'.
-  baseURL: (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : '') + '/api',
+  // In dev: Vite proxy forwards /api → localhost:3001/api
+  // In prod: frontend Express server proxies /api → BACKEND_URL/api
+  // Either way the browser just hits its own origin at /api — no VITE_API_URL needed.
+  baseURL: '/api',
   withCredentials: true,
   timeout: 10000,
 });
