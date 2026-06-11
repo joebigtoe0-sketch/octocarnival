@@ -14,7 +14,10 @@ const PORT = process.env.PORT || 3000;
 // Set BACKEND_URL in Railway frontend service vars, e.g. https://scraprats-backend-production.up.railway.app
 const BACKEND_URL = process.env.BACKEND_URL;
 if (BACKEND_URL) {
-  app.use('/api', createProxyMiddleware({
+  // Mount at root so Express does NOT strip the /api prefix — proxy receives
+  // the full path (/api/auth/email) and forwards it intact to the backend.
+  app.use(createProxyMiddleware({
+    pathFilter: '/api',
     target: BACKEND_URL,
     changeOrigin: true,
     on: {
