@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 // ── Update these when you have real addresses / links ──────────────────────────
 export const SOCIAL_LINKS = {
@@ -70,6 +70,49 @@ const UPDATES = [
 ];
 
 // ── Components ────────────────────────────────────────────────────────────────
+
+/** Falling toxic-green droplet particles (like the reference site). */
+function DropletField({ count = 26 }) {
+  const drops = useMemo(() => Array.from({ length: count }, (_, i) => ({
+    id:    i,
+    left:  `${(Math.random() * 100).toFixed(1)}%`,
+    delay: `${(Math.random() * 9).toFixed(2)}s`,
+    dur:   `${(5 + Math.random() * 7).toFixed(2)}s`,
+    size:  3 + Math.round(Math.random() * 4),
+    glow:  Math.random() > 0.6,
+  })), [count]);
+
+  return (
+    <div className="lp-droplets" aria-hidden="true">
+      {drops.map(d => (
+        <span
+          key={d.id}
+          className={`lp-droplet${d.glow ? ' lp-droplet--glow' : ''}`}
+          style={{
+            left: d.left,
+            width: d.size,
+            height: d.size * 2.4,
+            animationDelay: d.delay,
+            animationDuration: d.dur,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** The 4 corner rivets used by in-game plates/modals. */
+function Rivets() {
+  return (
+    <>
+      <span className="lp-rivet lp-rivet--tl" />
+      <span className="lp-rivet lp-rivet--tr" />
+      <span className="lp-rivet lp-rivet--bl" />
+      <span className="lp-rivet lp-rivet--br" />
+    </>
+  );
+}
+
 function SocialIcon({ href, src, alt }) {
   return (
     <a className="lp-social-icon" href={href} target="_blank" rel="noopener noreferrer" title={alt}>
@@ -95,53 +138,54 @@ export default function LandingPage() {
 
   return (
     <div className="lp-root">
+      <DropletField count={28} />
 
       {/* ── § ABOUT ─────────────────────────────────────────────────────────── */}
       <section className="lp-section lp-about" id="about">
         <div className="lp-container">
+          <div className="lp-section-head">
+            <div className="lp-eyebrow">▼ ABOUT THE GAME ▼</div>
+            <h2 className="lp-h2">WELCOME TO THE SEWER</h2>
+            <div className="lp-head-bar"><span /><span /><span /></div>
+          </div>
+
           <div className="lp-about__grid">
-            <div className="lp-about__text">
-              <div className="lp-eyebrow">// ABOUT THE GAME</div>
-              <h2 className="lp-h2">Welcome to the Sewer.</h2>
+            <div className="lp-panel lp-about__text">
+              <Rivets />
               <p className="lp-body">
-                ScrapRats is a free-to-play browser idle/clicker game set deep in the grungy
-                underworld. Hire a crew of misfits, gear up your rat with loot, and grind your
-                way up from bottom-feeding scavenger to feared Sewer King.
+                <span className="lp-body-hl">ScrapRats</span> is a free-to-play browser
+                idle/clicker game set deep in the grungy underworld. Hire a crew of misfits,
+                gear up your rat with loot, and grind your way up from bottom-feeding
+                scavenger to feared <span className="lp-body-hl">Sewer King</span>.
               </p>
               <p className="lp-body">
-                No downloads. No installs. Just you, your rats, and an infinite pile of enemies
-                that need to die. Built on the Solana blockchain — own your loot for real.
+                No downloads. No installs. Just you, your rats, and an infinite pile of
+                enemies that need to die. Built on the Solana blockchain — own your loot
+                for real.
               </p>
-              <div className="lp-about__stats">
-                <div className="lp-stat-pill"><span className="lp-stat-pill__num">6</span><span className="lp-stat-pill__label">Crew Members</span></div>
-                <div className="lp-stat-pill"><span className="lp-stat-pill__num">100+</span><span className="lp-stat-pill__label">Loot Variants</span></div>
-                <div className="lp-stat-pill"><span className="lp-stat-pill__num">∞</span><span className="lp-stat-pill__label">Grinding</span></div>
-              </div>
-            </div>
-
-            <div className="lp-about__right">
-              <div className="lp-contract-card">
-                <div className="lp-contract-card__label">SOLANA CONTRACT ADDRESS</div>
-                <div className="lp-contract-card__chain">Pump.fun · Solana</div>
-                <div className="lp-contract-card__address" title={CONTRACT_ADDRESS}>
-                  {CONTRACT_ADDRESS}
-                </div>
-                <a
-                  className="lp-contract-card__btn"
-                  href={SOCIAL_LINKS.pump}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img src="/assets/icons/pumpicon.png" alt="pump.fun" style={{ width: 16, height: 16, imageRendering: 'pixelated', marginRight: 7 }} />
-                  View on Pump.fun
-                </a>
-              </div>
-
               <div className="lp-about__socials">
                 <SocialIcon href={SOCIAL_LINKS.discord} src="/assets/icons/discordicon.png" alt="Discord" />
                 <SocialIcon href={SOCIAL_LINKS.twitter} src="/assets/icons/Xicon.png"       alt="X / Twitter" />
                 <SocialIcon href={SOCIAL_LINKS.pump}    src="/assets/icons/pumpicon.png"    alt="Pump.fun" />
               </div>
+            </div>
+
+            <div className="lp-panel lp-contract-card">
+              <Rivets />
+              <div className="lp-contract-card__label">SOLANA CONTRACT ADDRESS</div>
+              <div className="lp-contract-card__chain">Pump.fun · Solana</div>
+              <div className="lp-contract-card__address" title={CONTRACT_ADDRESS}>
+                {CONTRACT_ADDRESS}
+              </div>
+              <a
+                className="lp-btn lp-btn--toxic"
+                href={SOCIAL_LINKS.pump}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src="/assets/icons/pumpicon.png" alt="" style={{ width: 16, height: 16, imageRendering: 'pixelated', marginRight: 7 }} />
+                VIEW ON PUMP.FUN
+              </a>
             </div>
           </div>
         </div>
@@ -150,11 +194,16 @@ export default function LandingPage() {
       {/* ── § NAVIGATING THE SEWERS ─────────────────────────────────────────── */}
       <section className="lp-section lp-sewers" id="guide">
         <div className="lp-container">
-          <div className="lp-eyebrow">// NAVIGATING THE SEWERS</div>
-          <h2 className="lp-h2">Everything You Need to Know</h2>
+          <div className="lp-section-head">
+            <div className="lp-eyebrow">▼ NAVIGATING THE SEWERS ▼</div>
+            <h2 className="lp-h2">EVERYTHING YOU NEED TO KNOW</h2>
+            <div className="lp-head-bar"><span /><span /><span /></div>
+          </div>
+
           <div className="lp-cards-grid">
             {SEWER_CARDS.map((card, i) => (
-              <div key={i} className="lp-card">
+              <div key={i} className="lp-panel lp-card">
+                <Rivets />
                 <div className="lp-card__icon">{card.icon}</div>
                 <div className="lp-card__title">{card.title}</div>
                 <p className="lp-card__body">{card.body}</p>
@@ -172,9 +221,14 @@ export default function LandingPage() {
       {/* ── § LATEST UPDATES ────────────────────────────────────────────────── */}
       <section className="lp-section lp-updates" id="updates">
         <div className="lp-container">
-          <div className="lp-eyebrow">// LATEST UPDATES</div>
-          <h2 className="lp-h2">What's New in the Sewer</h2>
-          <div className="lp-updates__list">
+          <div className="lp-section-head">
+            <div className="lp-eyebrow">▼ LATEST UPDATES ▼</div>
+            <h2 className="lp-h2">WHAT'S NEW IN THE SEWER</h2>
+            <div className="lp-head-bar"><span /><span /><span /></div>
+          </div>
+
+          <div className="lp-panel lp-updates__panel">
+            <Rivets />
             {UPDATES.map((u, i) => (
               <div key={i} className="lp-update-row">
                 <div className="lp-update-row__meta">
@@ -190,7 +244,7 @@ export default function LandingPage() {
           </div>
 
           <div className="lp-back-wrap">
-            <button className="lp-back-btn" onClick={scrollToTop}>
+            <button className="lp-btn lp-btn--toxic lp-btn--big" onClick={scrollToTop}>
               ↑ BACK TO THE SEWER
             </button>
           </div>
