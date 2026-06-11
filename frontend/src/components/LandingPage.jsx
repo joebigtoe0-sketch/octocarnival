@@ -11,22 +11,24 @@ export const CONTRACT_ADDRESS = 'PASTE-YOUR-PUMPFUN-CA-HERE-xxxxxxxxxxxxxxxxxxpu
 // ── Data ──────────────────────────────────────────────────────────────────────
 const SEWER_CARDS = [
   {
-    glyph: '►',
+    icon: '🐀',
     title: 'HOW TO PLAY',
-    body: 'Click the enemy to deal damage. Hire crew to grind DPS while you idle. Loot boxes, gear up your rat, level your stats and climb from gutter trash to Sewer King.',
-    link: '#game',
-    linkLabel: 'READ THE MANUAL',
-    sameTab: true,
+    body: 'Smash enemies with your Scrapper, collect loot from boxes, hire and level up your crew, equip your rat with gear, and climb the ranks. Idle when you\'re away — your crew keeps fighting.',
   },
   {
-    glyph: '⚠',
+    icon: '🗺️',
+    title: 'NAVIGATING THE UI',
+    body: 'Top-left: coins, diamonds, shop & bounties. Top-right: stats, gallery, base & settings. Bottom: your crew roster. Click the enemy to deal damage. Open lootboxes from your inventory.',
+  },
+  {
+    icon: '🐛',
     title: 'REPORT A LEAK',
-    body: 'Found a bug? Something crawling in the pipes that shouldn\'t be? Tell us where it leaks in our Discord and we\'ll send a rat with a wrench.',
+    body: 'Found a bug? Something crawling in the pipes that shouldn\'t be? Drop it in our Discord #bug-reports channel — we\'ll send a rat with a wrench.',
     link: SOCIAL_LINKS.discord,
     linkLabel: 'FILE A REPORT',
   },
   {
-    glyph: '✦',
+    icon: '💡',
     title: 'DROP AN IDEA',
     body: 'Got a feature in mind — new gear, new crew, dumber hats? Pitch it in #suggestions. The best ideas get fished out of the water and shipped.',
     link: SOCIAL_LINKS.discord,
@@ -36,24 +38,34 @@ const SEWER_CARDS = [
 
 const UPDATES = [
   {
-    ver: 'v0.4', date: 'JUNE 2026', current: true,
-    title: 'THE SURFACE BREACH',
-    body: 'ScrapRats claws its way onto the web. Cloud saves with login & registration, Google sign-in, and this very site you\'re sinking through.',
+    date: 'Jun 2026',
+    tag: 'NEW',
+    title: 'Login & Registration',
+    body: 'Cloud save is live. Create an account to keep your progress across devices.',
   },
   {
-    ver: 'v0.3', date: 'JUNE 2026',
-    title: 'SMOOTHER GRINDING',
-    body: 'Enemy HP and crew costs rebalanced past level 30. AFK level-ups now auto-apply stat cards while you\'re away. Quick-sell loot for 50% value.',
+    date: 'Jun 2026',
+    tag: 'BALANCE',
+    title: 'Smoother Progression',
+    body: 'Enemy HP and crew costs rebalanced at level 30+. Reaching level 100 in a session is now a real goal.',
   },
   {
-    ver: 'v0.2', date: 'EARLIER',
-    title: 'CORE LOOP LOCKED',
-    body: 'Crew milestones, leader traits, lootbox wheel, bounties, achievements and the gallery. The sewer economy takes shape.',
+    date: 'Jun 2026',
+    tag: 'QoL',
+    title: 'AFK Card Auto-Apply',
+    body: 'Level-up stat cards are now auto-applied while you\'re offline. Come back to boosted stats and an AFK summary toast.',
   },
   {
-    ver: 'v0.1', date: 'THE BEGINNING',
-    title: 'FIRST DESCENT',
-    body: 'A rat, a sewer, and a bad idea. Initial concept draft — chaotic, greedy, sewer gothic.',
+    date: 'Jun 2026',
+    tag: 'QoL',
+    title: 'Quick Sell Loot',
+    body: 'You can now quick-sell lootbox rewards for 50% of their coin value right from the reveal screen.',
+  },
+  {
+    date: 'Jun 2026',
+    tag: 'PERF',
+    title: 'Loading Screen & Optimisations',
+    body: 'Assets now preload before the game starts. Gzip compression and smart caching for faster loads on every visit.',
   },
 ];
 
@@ -64,7 +76,6 @@ function useReveal() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Already in view on mount → show immediately
     if (el.getBoundingClientRect().top < window.innerHeight * 0.9) {
       setShown(true);
       return;
@@ -95,8 +106,27 @@ function DripLine({ drips }) {
   );
 }
 
-function DepthTag({ depth, label }) {
-  return <div className="lp-depthtag">DEPTH <b>−{depth}M</b> · {label}</div>;
+/** The 4 corner rivets used by in-game plates/modals. */
+function Rivets() {
+  return (
+    <>
+      <span className="lp-rivet lp-rivet--tl" />
+      <span className="lp-rivet lp-rivet--tr" />
+      <span className="lp-rivet lp-rivet--bl" />
+      <span className="lp-rivet lp-rivet--br" />
+    </>
+  );
+}
+
+function TagBadge({ tag }) {
+  const cls = {
+    NEW:     'lp-tag--new',
+    BALANCE: 'lp-tag--balance',
+    QoL:     'lp-tag--qol',
+    PERF:    'lp-tag--perf',
+    FIX:     'lp-tag--fix',
+  }[tag] || '';
+  return <span className={`lp-tag ${cls}`}>{tag}</span>;
 }
 
 function CopyButton({ text }) {
@@ -111,6 +141,14 @@ function CopyButton({ text }) {
     <button className="lp-copybtn" type="button" onClick={copy}>
       {copied ? 'COPIED!' : 'COPY'}
     </button>
+  );
+}
+
+function SocialIcon({ href, src, alt }) {
+  return (
+    <a className="lp-socialrow__icon" href={href} target="_blank" rel="noopener noreferrer" title={alt}>
+      <img src={src} alt={alt} />
+    </a>
   );
 }
 
@@ -132,7 +170,6 @@ export default function LandingPage() {
           { left: '57%', delay: '.6s'  },
           { left: '83%', delay: '2.1s' },
         ]} />
-        <DepthTag depth={18} label="UPPER TUNNELS" />
         <Reveal>
           <p className="lp-kicker">ABOUT THE SEWER</p>
           <h2 className="lp-headline">BORN IN THE GUTTER.<br />RICH IN THE SLUDGE.</h2>
@@ -145,7 +182,8 @@ export default function LandingPage() {
             No downloads. No wallet needed to play. Just a rat, a sewer, and questionable ambition.
           </p>
 
-          <div className="lp-contract">
+          <div className="lp-panel lp-contract">
+            <Rivets />
             <div className="lp-contract__lbl">$SCRAP · PUMP.FUN CONTRACT ADDRESS (SOLANA)</div>
             <div className="lp-contract__row">
               <code className="lp-contract__addr">{CONTRACT_ADDRESS}</code>
@@ -157,15 +195,9 @@ export default function LandingPage() {
           </div>
 
           <div className="lp-socialrow">
-            <a className="lp-socialrow__icon" href={SOCIAL_LINKS.discord} target="_blank" rel="noopener noreferrer" title="Discord">
-              <img src="/assets/icons/discordicon.png" alt="Discord" />
-            </a>
-            <a className="lp-socialrow__icon" href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener noreferrer" title="X / Twitter">
-              <img src="/assets/icons/Xicon.png" alt="X" />
-            </a>
-            <a className="lp-socialrow__icon" href={SOCIAL_LINKS.pump} target="_blank" rel="noopener noreferrer" title="Pump.fun">
-              <img src="/assets/icons/pumpicon.png" alt="Pump.fun" />
-            </a>
+            <SocialIcon href={SOCIAL_LINKS.discord} src="/assets/icons/discordicon.png" alt="Discord" />
+            <SocialIcon href={SOCIAL_LINKS.twitter} src="/assets/icons/Xicon.png"       alt="X / Twitter" />
+            <SocialIcon href={SOCIAL_LINKS.pump}    src="/assets/icons/pumpicon.png"    alt="Pump.fun" />
           </div>
         </Reveal>
       </section>
@@ -177,19 +209,19 @@ export default function LandingPage() {
           { left: '48%', delay: '1.8s' },
           { left: '74%', delay: '.9s'  },
         ]} />
-        <DepthTag depth={42} label="MAINTENANCE LEVEL" />
         <Reveal>
           <p className="lp-kicker">NAVIGATING THE SEWERS</p>
           <h2 className="lp-headline">FIND YOUR WAY AROUND.</h2>
           <div className="lp-cards">
-            {SEWER_CARDS.map((c, i) => (
-              <div key={i} className="lp-scard">
-                <span className="lp-scard__glyph">{c.glyph}</span>
-                <h3>{c.title}</h3>
-                <p>{c.body}</p>
-                {c.sameTab
-                  ? <a href={c.link} onClick={e => { e.preventDefault(); scrollToTop(); }}>{c.linkLabel}</a>
-                  : <a href={c.link} target="_blank" rel="noopener noreferrer">{c.linkLabel}</a>}
+            {SEWER_CARDS.map((card, i) => (
+              <div key={i} className="lp-panel lp-scard">
+                <Rivets />
+                <div className="lp-scard__icon">{card.icon}</div>
+                <h3>{card.title}</h3>
+                <p>{card.body}</p>
+                {card.link && (
+                  <a href={card.link} target="_blank" rel="noopener noreferrer">{card.linkLabel}</a>
+                )}
               </div>
             ))}
           </div>
@@ -204,24 +236,30 @@ export default function LandingPage() {
           { left: '69%', delay: '1.6s' },
           { left: '88%', delay: '.8s'  },
         ]} />
-        <DepthTag depth={77} label="THE ARCHIVES" />
         <Reveal>
-          <p className="lp-kicker">LATEST UPDATES</p>
-          <h2 className="lp-headline">NEWS FROM BELOW.</h2>
-          <div className="lp-updates">
-            {UPDATES.map((u, i) => (
-              <div key={i} className={`lp-update${u.current ? '' : ' lp-update--old'}`}>
-                <span className="lp-update__ver">{u.ver}</span>
-                <div className="lp-update__t">
-                  <span className="lp-update__date">{u.date}</span>
-                  <h4>{u.title}</h4>
-                  <p>{u.body}</p>
+          <div className="lp-updates-center">
+            <p className="lp-kicker lp-kicker--center">LATEST UPDATES</p>
+            <h2 className="lp-headline">NEWS FROM BELOW.</h2>
+
+            <div className="lp-panel lp-updates__panel">
+              <Rivets />
+              {UPDATES.map((u, i) => (
+                <div key={i} className="lp-update-row">
+                  <div className="lp-update-row__meta">
+                    <TagBadge tag={u.tag} />
+                    <span className="lp-update-row__date">{u.date}</span>
+                  </div>
+                  <div className="lp-update-row__content">
+                    <div className="lp-update-row__title">{u.title}</div>
+                    <div className="lp-update-row__body">{u.body}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="lp-backtogame">
-            <button className="lp-backbtn" onClick={scrollToTop}>BACK TO THE GAME <b>▲</b></button>
+              ))}
+            </div>
+
+            <div className="lp-backtogame">
+              <button className="lp-backbtn" onClick={scrollToTop}>BACK TO THE GAME <b>▲</b></button>
+            </div>
           </div>
         </Reveal>
       </section>
@@ -250,7 +288,7 @@ export default function LandingPage() {
         </div>
         <div className="lp-footer__copy">
           <span>© {new Date().getFullYear()} ScrapRats. All rights reserved.</span>
-          <span>DEPTH −99M · ROCK BOTTOM. No rats were harmed in the making of this sewer.</span>
+          <span>No rats were harmed in the making of this sewer.</span>
         </div>
       </footer>
 
