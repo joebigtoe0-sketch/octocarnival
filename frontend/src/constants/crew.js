@@ -15,7 +15,7 @@ export const CREW_DEFS = [
     portrait: '/assets/scrapper.png',
     flavour: 'Your clicker. Levels up to boost click damage per hit.',
     type: 'active',
-    levelCostBase: 38,
+    levelCostBase: 48,
     levelCostMul:  1.08,
     milestones: [
       { level: 10,  type: 'active',  icon: '/assets/icons/clickfrenzyskill.png', name: 'Frenzy',
@@ -35,7 +35,7 @@ export const CREW_DEFS = [
     portrait: '/assets/gutter-pup.png',
     flavour: 'Tiny scrappy pup gnawing at ankles.',
     type: 'passive',
-    baseCost: 94,
+    baseCost: 118,
     costMul:  1.085,
     dps: 8,
     milestones: [
@@ -55,7 +55,7 @@ export const CREW_DEFS = [
     portrait: '/assets/mudlark.png',
     flavour: 'Sewage diver who weaponised slime.',
     type: 'passive',
-    baseCost: 563,
+    baseCost: 704,
     costMul:  1.085,
     dps: 60,
     milestones: [
@@ -75,7 +75,7 @@ export const CREW_DEFS = [
     portrait: '/assets/pipe-rat.png',
     flavour: 'Tunnel runner, fast and wiry, hits hard.',
     type: 'passive',
-    baseCost: 3000,
+    baseCost: 3750,
     costMul:  1.085,
     dps: 400,
     milestones: [
@@ -96,7 +96,7 @@ export const CREW_DEFS = [
     portrait: '/assets/sludge-baron.png',
     flavour: 'Fat lazy brawler who somehow devastates.',
     type: 'passive',
-    baseCost: 15000,
+    baseCost: 18750,
     costMul:  1.085,
     dps: 2800,
     milestones: [
@@ -116,7 +116,7 @@ export const CREW_DEFS = [
     portrait: '/assets/plague-knight.png',
     flavour: 'Diseased, ancient, utterly devastating.',
     type: 'passive',
-    baseCost: 67500,
+    baseCost: 84375,
     costMul:  1.085,
     dps: 20000,
     milestones: [
@@ -220,7 +220,9 @@ export function scrapperClickBonus(scrapperLevel, unlockedMilestones = {}) {
 
 /**
  * Base click damage (before clickPower stat multiplier).
+ * Starts at 5; level 1 gives +5, and each level's bonus keeps growing
+ * (~8% compounding) so clicking scales into the late game.
  */
 export function clickDamageBase(scrapperLevel = 0) {
-  return 25 + scrapperLevel * 20;
+  return Math.floor(5 + 5 * scrapperLevel * Math.pow(1.08, scrapperLevel));
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { CREW_DEFS, crewCost, totalCrewDps } from '../constants/crew.js';
+import { CREW_DEFS, crewCost, totalCrewDps, clickDamageBase } from '../constants/crew.js';
 import { RARITY_COLORS } from '../constants/traits.js';
 import { ACHIEVEMENTS } from '../constants/achievements.js';
 import { useGameStore } from '../stores/gameStore.js';
@@ -458,10 +458,12 @@ function CrewRoster({ crewCounts, crewLevels, coins, stats, onHire, onLevelUpCre
                   ? `Hire first ${def.name}\n+${fmtN(def.dps)} DPS base`
                   : `Next hire → +${fmtN(deltaDps)} DPS\nTotal: ${fmtN(nextDps)} DPS`;
               } else if (isActive) {
-                const nextLv = crewLv + 1;
+                const nextLv  = crewLv + 1;
+                const curDmg  = clickDamageBase(crewLv);
+                const nextDmg = clickDamageBase(nextLv);
                 lvlTip = crewLv === 0
                   ? `Hire ${def.name}\nUnlocks click boosting`
-                  : `Lv.${nextLv}: +20 base click dmg\n×${1 + nextLv * 3} click multiplier`;
+                  : `Lv.${nextLv}: +${fmtN(nextDmg - curDmg)} base click dmg\nTotal: ${fmtN(nextDmg)} per click`;
               }
               return (
                 <div
