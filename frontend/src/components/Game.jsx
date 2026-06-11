@@ -15,6 +15,7 @@ import BountyPanel      from './BountyPanel.jsx';
 import AuthModal        from './AuthModal.jsx';
 import { SOCIAL_LINKS } from './LandingPage.jsx';
 import LootboxModal     from './LootboxModal.jsx';
+import RotatePrompt     from './RotatePrompt.jsx';
 import { startMusic, playSound, skipTrack, getAudioSettings, subscribeAudio,
          setMusicVolume, setSfxVolume, setMusicMuted, setSfxMuted } from '../audio.js';
 
@@ -695,6 +696,7 @@ export default function Game() {
         </div>
       </div>
 
+      <RotatePrompt />
     </div>
   );
 }

@@ -2075,6 +2075,60 @@ button, .navbtn, .hirebtn, .ratbtn, .sellbtn, .gearbtn, .itemstab, .popup__close
 .lb-reveal__slot{ font-family:var(--fnt-pixel2); font-size:12px; color:#7e9460; margin-bottom:6px; }
 .lb-reveal__value{ font-family:var(--fnt-pixel); font-size:10px; color:var(--gold); margin-bottom:2px; }
 
+/* ── Portrait rotate gate (mobile game only) ─────────────────────────────── */
+.rotate-prompt{
+  position:absolute; inset:0; z-index:100;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(6,10,4,.94);
+  backdrop-filter:blur(6px);
+  padding:24px env(safe-area-inset-right,0) 24px env(safe-area-inset-left,0);
+  pointer-events:auto;
+}
+.rotate-prompt__inner{
+  display:flex; flex-direction:column; align-items:center;
+  text-align:center; gap:14px; max-width:300px;
+}
+.rotate-prompt__logo{
+  width:56px; height:56px; object-fit:contain;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 0 16px rgba(155,220,31,.35));
+}
+.rotate-prompt__phone{
+  width:52px; height:88px; margin:8px 0 4px;
+  border:3px solid #4a5836; border-radius:10px;
+  background:#10160b;
+  box-shadow:0 0 24px rgba(155,220,31,.2), inset 0 0 12px rgba(0,0,0,.6);
+  position:relative;
+  animation:rotatePhone 2.4s ease-in-out infinite;
+}
+.rotate-prompt__phone-screen{
+  position:absolute; inset:8px 6px;
+  border-radius:4px;
+  background:linear-gradient(180deg, rgba(155,220,31,.25), rgba(60,100,20,.15));
+}
+@keyframes rotatePhone{
+  0%, 18%{ transform:rotate(0deg); }
+  42%, 58%{ transform:rotate(90deg); }
+  82%, 100%{ transform:rotate(0deg); }
+}
+.rotate-prompt__title{
+  font-family:var(--fnt-pixel); font-size:18px; letter-spacing:2px;
+  color:#e6ffc2; margin:0; text-shadow:0 3px 0 #000;
+}
+.rotate-prompt__sub{
+  font-family:var(--fnt-pixel2); font-size:14px; line-height:1.5;
+  color:#9fb574; margin:0;
+}
+.rotate-prompt__hint{
+  font-family:var(--fnt-pixel2); font-size:11px; line-height:1.4;
+  color:#5a6450; margin:4px 0 0;
+}
+
+/* Hide descend CTA while portrait gate is active */
+@media (orientation: portrait) and (max-width: 900px){
+  .lp-descend{ display:none !important; }
+}
+
 /* ── Loading Screen ─────────────────────────────────────────────────────── */
 .loading-screen {
   position: fixed; inset: 0;
