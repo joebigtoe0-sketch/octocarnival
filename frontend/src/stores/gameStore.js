@@ -107,12 +107,9 @@ export function killsPerLevel(lvl) {
 }
 
 function enemyMaxHpFor(accountLevel) {
-  const raw = accountLevel - 1;
-  // Levels 1-30: normal 1.22× growth.
-  // Levels 30+: each extra level adds 77% of the normal exponent step,
-  // giving ~1.3M HP at level 60 and ~65M at level 86 (was ~130M).
-  const exp = raw <= 29 ? raw : 29 + (raw - 29) * 0.77;
-  const baseHp = Math.floor(120 * Math.pow(1.22, exp));
+  // Single smooth curve (no kink): 500 HP at level 1, ~450M at level 100.
+  // ×1.162 per level — slower early game, same pace mid/late as before.
+  const baseHp = Math.floor(500 * Math.pow(1.162, accountLevel - 1));
   return Math.max(1, Math.floor(baseHp / enemyCountScale(accountLevel)));
 }
 
