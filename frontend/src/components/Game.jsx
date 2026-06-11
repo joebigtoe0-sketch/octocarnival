@@ -863,10 +863,10 @@ function SettingsModal({ onClose, onReset, prestigeLevel, onPrestige, canPrestig
         <div className="modal__section-hd">SOCIALS</div>
         <div className="modal__row">
           <div className="settings-socials">
-            <a className="settings-social-btn" href="https://discord.gg/scraprats" target="_blank" rel="noopener noreferrer" title="Discord">
+            <a className="settings-social-btn" href="https://discord.gg/h6Qdw3aNWK" target="_blank" rel="noopener noreferrer" title="Discord">
               <img src="/assets/icons/discordicon.png" alt="Discord" />
             </a>
-            <a className="settings-social-btn" href="https://x.com/scraprats" target="_blank" rel="noopener noreferrer" title="X / Twitter">
+            <a className="settings-social-btn" href="https://x.com/scrapratsfun" target="_blank" rel="noopener noreferrer" title="X / Twitter">
               <img src="/assets/icons/Xicon.png" alt="X" />
             </a>
             <a className="settings-social-btn" href="https://pump.fun/coin/YOUR_CONTRACT" target="_blank" rel="noopener noreferrer" title="Pump.fun">

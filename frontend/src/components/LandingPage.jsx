@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import LegalModal from './LegalModal.jsx';
 
-// ── Update these when you have real addresses / links ──────────────────────────
+// ── Official links ──────────────────────────────────────────────────────────
 export const SOCIAL_LINKS = {
-  discord: 'https://discord.gg/scraprats',
-  twitter: 'https://x.com/scraprats',
+  discord: 'https://discord.gg/h6Qdw3aNWK',
+  twitter: 'https://x.com/scrapratsfun',
   pump:    'https://pump.fun/coin/YOUR_CONTRACT_ADDRESS',
 };
 export const CONTRACT_ADDRESS = 'PASTE-YOUR-PUMPFUN-CA-HERE-xxxxxxxxxxxxxxxxxxpump';
@@ -11,24 +12,24 @@ export const CONTRACT_ADDRESS = 'PASTE-YOUR-PUMPFUN-CA-HERE-xxxxxxxxxxxxxxxxxxpu
 // ── Data ──────────────────────────────────────────────────────────────────────
 const SEWER_CARDS = [
   {
-    icon: '🐀',
+    icon: '/assets/icons/questionmark.png',
     title: 'HOW TO PLAY',
     body: 'Smash enemies with your Scrapper, collect loot from boxes, hire and level up your crew, equip your rat with gear, and climb the ranks. Idle when you\'re away — your crew keeps fighting.',
   },
   {
-    icon: '🗺️',
+    icon: '/assets/icons/compass.png',
     title: 'NAVIGATING THE UI',
     body: 'Top-left: coins, diamonds, shop & bounties. Top-right: stats, gallery, base & settings. Bottom: your crew roster. Click the enemy to deal damage. Open lootboxes from your inventory.',
   },
   {
-    icon: '🐛',
+    icon: '/assets/icons/worm.png',
     title: 'REPORT A LEAK',
     body: 'Found a bug? Something crawling in the pipes that shouldn\'t be? Drop it in our Discord #bug-reports channel — we\'ll send a rat with a wrench.',
     link: SOCIAL_LINKS.discord,
     linkLabel: 'FILE A REPORT',
   },
   {
-    icon: '💡',
+    icon: '/assets/icons/scroll.png',
     title: 'DROP AN IDEA',
     body: 'Got a feature in mind — new gear, new crew, dumber hats? Pitch it in #suggestions. The best ideas get fished out of the water and shipped.',
     link: SOCIAL_LINKS.discord,
@@ -155,6 +156,7 @@ function SocialIcon({ href, src, alt }) {
 // ── Main export ───────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  const [legalDoc, setLegalDoc] = useState(null); // null | 'privacy' | 'terms'
 
   return (
     <div className="lp-site">
@@ -216,7 +218,7 @@ export default function LandingPage() {
             {SEWER_CARDS.map((card, i) => (
               <div key={i} className="lp-panel lp-scard">
                 <Rivets />
-                <div className="lp-scard__icon">{card.icon}</div>
+                <div className="lp-scard__icon"><img src={card.icon} alt="" /></div>
                 <h3>{card.title}</h3>
                 <p>{card.body}</p>
                 {card.link && (
@@ -282,15 +284,16 @@ export default function LandingPage() {
             </a>
           </div>
           <div className="lp-footer__legal">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
+            <a href="#privacy" onClick={e => { e.preventDefault(); setLegalDoc('privacy'); }}>Privacy Policy</a>
+            <a href="#terms"   onClick={e => { e.preventDefault(); setLegalDoc('terms');   }}>Terms of Service</a>
           </div>
         </div>
         <div className="lp-footer__copy">
           <span>© {new Date().getFullYear()} ScrapRats. All rights reserved.</span>
-          <span>No rats were harmed in the making of this sewer.</span>
         </div>
       </footer>
+
+      <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} />
 
     </div>
   );
