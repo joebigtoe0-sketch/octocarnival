@@ -16,7 +16,7 @@ export const CREW_DEFS = [
     flavour: 'Your clicker. Levels up to boost click damage per hit.',
     type: 'active',
     levelCostBase: 75,
-    levelCostMul:  1.09,
+    levelCostMul:  1.08,
     milestones: [
       { level: 10,  type: 'active',  icon: '/assets/icons/clickfrenzyskill.png', name: 'Frenzy',
         desc: '10× click damage for 15s. CD: 10 min', cooldown: 600, duration: 15, multiplier: 10,
@@ -36,7 +36,7 @@ export const CREW_DEFS = [
     flavour: 'Tiny scrappy pup gnawing at ankles.',
     type: 'passive',
     baseCost: 188,
-    costMul:  1.10,
+    costMul:  1.085,
     dps: 8,
     milestones: [
       { level: 10,  type: 'passive', icon: '/assets/icons/crewskills/gutterpup/Icon20.png', stat: 'ownDps', value: 100,
@@ -56,7 +56,7 @@ export const CREW_DEFS = [
     flavour: 'Sewage diver who weaponised slime.',
     type: 'passive',
     baseCost: 1125,
-    costMul:  1.10,
+    costMul:  1.085,
     dps: 60,
     milestones: [
       { level: 10,  type: 'passive', icon: '/assets/icons/crewskills/mudlark/Icon17.png', stat: 'ownDps', value: 100,
@@ -76,7 +76,7 @@ export const CREW_DEFS = [
     flavour: 'Tunnel runner, fast and wiry, hits hard.',
     type: 'passive',
     baseCost: 6000,
-    costMul:  1.10,
+    costMul:  1.085,
     dps: 400,
     milestones: [
       { level: 10,  type: 'passive', icon: '/assets/icons/crewskills/piperat/Icon25.png', stat: 'ownDps', value: 100,
@@ -97,7 +97,7 @@ export const CREW_DEFS = [
     flavour: 'Fat lazy brawler who somehow devastates.',
     type: 'passive',
     baseCost: 30000,
-    costMul:  1.10,
+    costMul:  1.085,
     dps: 2800,
     milestones: [
       { level: 10,  type: 'passive', icon: '/assets/icons/crewskills/sludgebaron/Icon36.png', stat: 'allDps', value: 25,
@@ -117,7 +117,7 @@ export const CREW_DEFS = [
     flavour: 'Diseased, ancient, utterly devastating.',
     type: 'passive',
     baseCost: 135000,
-    costMul:  1.10,
+    costMul:  1.085,
     dps: 20000,
     milestones: [
       { level: 10,  type: 'passive', icon: '/assets/icons/crewskills/plagueknight/Icon2.png',  stat: 'ownDps', value: 100,
