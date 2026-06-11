@@ -21,6 +21,16 @@ function AppRoot() {
     <div className="sr-page">
       <section className="sr-game-section" id="game">
         <Game />
+        <a
+          className="lp-descend"
+          href="#about"
+          onClick={e => {
+            e.preventDefault();
+            document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
+          DESCEND DEEPER <b>▼</b>
+        </a>
       </section>
       <LandingPage />
     </div>

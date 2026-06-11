@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 // ── Update these when you have real addresses / links ──────────────────────────
 export const SOCIAL_LINKS = {
@@ -6,130 +6,112 @@ export const SOCIAL_LINKS = {
   twitter: 'https://x.com/scraprats',
   pump:    'https://pump.fun/coin/YOUR_CONTRACT_ADDRESS',
 };
-export const CONTRACT_ADDRESS = 'YOUR_CONTRACT_ADDRESS_HERE';
+export const CONTRACT_ADDRESS = 'PASTE-YOUR-PUMPFUN-CA-HERE-xxxxxxxxxxxxxxxxxxpump';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const SEWER_CARDS = [
   {
-    icon: '🐀',
-    title: 'How to Play',
-    body: 'Smash enemies with your Scrapper, collect loot from boxes, hire and level up your crew, equip your rat with gear, and climb the ranks. Idle when you\'re away — your crew keeps fighting.',
+    glyph: '►',
+    title: 'HOW TO PLAY',
+    body: 'Click the enemy to deal damage. Hire crew to grind DPS while you idle. Loot boxes, gear up your rat, level your stats and climb from gutter trash to Sewer King.',
+    link: '#game',
+    linkLabel: 'READ THE MANUAL',
+    sameTab: true,
   },
   {
-    icon: '🗺️',
-    title: 'Navigating the UI',
-    body: 'Top-left: coins, diamonds, shop & bounties. Top-right: stats, gallery, base & settings. Bottom: your crew roster. Click the enemy to deal damage. Open lootboxes from your inventory.',
-  },
-  {
-    icon: '🐛',
-    title: 'Report a Bug',
-    body: 'Found something broken? Drop it in our Discord #bug-reports channel. Include your level, what happened and any console errors. We fix fast.',
+    glyph: '⚠',
+    title: 'REPORT A LEAK',
+    body: 'Found a bug? Something crawling in the pipes that shouldn\'t be? Tell us where it leaks in our Discord and we\'ll send a rat with a wrench.',
     link: SOCIAL_LINKS.discord,
-    linkLabel: 'Open Discord →',
+    linkLabel: 'FILE A REPORT',
   },
   {
-    icon: '💡',
-    title: 'Ideas & Suggestions',
-    body: 'Got a feature idea or balance suggestion? We read everything in #suggestions on Discord. The best ideas make it into the game.',
+    glyph: '✦',
+    title: 'DROP AN IDEA',
+    body: 'Got a feature in mind — new gear, new crew, dumber hats? Pitch it in #suggestions. The best ideas get fished out of the water and shipped.',
     link: SOCIAL_LINKS.discord,
-    linkLabel: 'Share Your Idea →',
+    linkLabel: 'PITCH IT',
   },
 ];
 
 const UPDATES = [
   {
-    date: 'Jun 2026',
-    tag: 'NEW',
-    title: 'Login & Registration',
-    body: 'Cloud save is live. Create an account to keep your progress across devices.',
+    ver: 'v0.4', date: 'JUNE 2026', current: true,
+    title: 'THE SURFACE BREACH',
+    body: 'ScrapRats claws its way onto the web. Cloud saves with login & registration, Google sign-in, and this very site you\'re sinking through.',
   },
   {
-    date: 'Jun 2026',
-    tag: 'BALANCE',
-    title: 'Smoother Progression',
-    body: 'Enemy HP and crew costs rebalanced at level 30+. Reaching level 100 in a session is now a real goal.',
+    ver: 'v0.3', date: 'JUNE 2026',
+    title: 'SMOOTHER GRINDING',
+    body: 'Enemy HP and crew costs rebalanced past level 30. AFK level-ups now auto-apply stat cards while you\'re away. Quick-sell loot for 50% value.',
   },
   {
-    date: 'Jun 2026',
-    tag: 'QoL',
-    title: 'AFK Card Auto-Apply',
-    body: 'Level-up stat cards are now auto-applied while you\'re offline. Come back to boosted stats and an AFK summary toast.',
+    ver: 'v0.2', date: 'EARLIER',
+    title: 'CORE LOOP LOCKED',
+    body: 'Crew milestones, leader traits, lootbox wheel, bounties, achievements and the gallery. The sewer economy takes shape.',
   },
   {
-    date: 'Jun 2026',
-    tag: 'QoL',
-    title: 'Quick Sell Loot',
-    body: 'You can now quick-sell lootbox rewards for 50% of their coin value right from the reveal screen.',
-  },
-  {
-    date: 'Jun 2026',
-    tag: 'PERF',
-    title: 'Loading Screen & Optimisations',
-    body: 'Assets now preload before the game starts. Gzip compression and smart caching for faster loads on every visit.',
+    ver: 'v0.1', date: 'THE BEGINNING',
+    title: 'FIRST DESCENT',
+    body: 'A rat, a sewer, and a bad idea. Initial concept draft — chaotic, greedy, sewer gothic.',
   },
 ];
 
-// ── Components ────────────────────────────────────────────────────────────────
+// ── Scroll-reveal hook ────────────────────────────────────────────────────────
+function useReveal() {
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Already in view on mount → show immediately
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.9) {
+      setShown(true);
+      return;
+    }
+    const obs = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) { setShown(true); obs.disconnect(); } }),
+      { rootMargin: '0px 0px -12% 0px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, shown];
+}
 
-/** Falling toxic-green droplet particles (like the reference site). */
-function DropletField({ count = 26 }) {
-  const drops = useMemo(() => Array.from({ length: count }, (_, i) => ({
-    id:    i,
-    left:  `${(Math.random() * 100).toFixed(1)}%`,
-    delay: `${(Math.random() * 9).toFixed(2)}s`,
-    dur:   `${(5 + Math.random() * 7).toFixed(2)}s`,
-    size:  3 + Math.round(Math.random() * 4),
-    glow:  Math.random() > 0.6,
-  })), [count]);
+function Reveal({ children }) {
+  const [ref, shown] = useReveal();
+  return <div ref={ref} className={`lp-reveal${shown ? '' : ' lp-reveal--pre'}`}>{children}</div>;
+}
 
+// ── Bits ──────────────────────────────────────────────────────────────────────
+function DripLine({ drips }) {
   return (
-    <div className="lp-droplets" aria-hidden="true">
-      {drops.map(d => (
-        <span
-          key={d.id}
-          className={`lp-droplet${d.glow ? ' lp-droplet--glow' : ''}`}
-          style={{
-            left: d.left,
-            width: d.size,
-            height: d.size * 2.4,
-            animationDelay: d.delay,
-            animationDuration: d.dur,
-          }}
-        />
+    <div className="lp-dripline" aria-hidden="true">
+      {drips.map((d, i) => (
+        <span key={i} style={{ left: d.left, animationDelay: d.delay }} />
       ))}
     </div>
   );
 }
 
-/** The 4 corner rivets used by in-game plates/modals. */
-function Rivets() {
-  return (
-    <>
-      <span className="lp-rivet lp-rivet--tl" />
-      <span className="lp-rivet lp-rivet--tr" />
-      <span className="lp-rivet lp-rivet--bl" />
-      <span className="lp-rivet lp-rivet--br" />
-    </>
-  );
+function DepthTag({ depth, label }) {
+  return <div className="lp-depthtag">DEPTH <b>−{depth}M</b> · {label}</div>;
 }
 
-function SocialIcon({ href, src, alt }) {
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    });
+  };
   return (
-    <a className="lp-social-icon" href={href} target="_blank" rel="noopener noreferrer" title={alt}>
-      <img src={src} alt={alt} />
-    </a>
+    <button className="lp-copybtn" type="button" onClick={copy}>
+      {copied ? 'COPIED!' : 'COPY'}
+    </button>
   );
-}
-
-function TagBadge({ tag }) {
-  const cls = {
-    NEW:     'lp-tag--new',
-    BALANCE: 'lp-tag--balance',
-    QoL:     'lp-tag--qol',
-    PERF:    'lp-tag--perf',
-    FIX:     'lp-tag--fix',
-  }[tag] || '';
-  return <span className={`lp-tag ${cls}`}>{tag}</span>;
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
@@ -137,143 +119,138 @@ export default function LandingPage() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
-    <div className="lp-root">
-      <DropletField count={28} />
+    <div className="lp-site">
+
+      {/* brick divider between game and website */}
+      <img className="lp-brickdivider" src="/assets/brickdivider.png" alt="" aria-hidden="true" />
 
       {/* ── § ABOUT ─────────────────────────────────────────────────────────── */}
-      <section className="lp-section lp-about" id="about">
-        <div className="lp-container">
-          <div className="lp-section-head">
-            <div className="lp-eyebrow">▼ ABOUT THE GAME ▼</div>
-            <h2 className="lp-h2">WELCOME TO THE SEWER</h2>
-            <div className="lp-head-bar"><span /><span /><span /></div>
+      <section className="lp-sec lp-sec--about" id="about">
+        <DripLine drips={[
+          { left: '12%', delay: '0s'   },
+          { left: '31%', delay: '1.3s' },
+          { left: '57%', delay: '.6s'  },
+          { left: '83%', delay: '2.1s' },
+        ]} />
+        <DepthTag depth={18} label="UPPER TUNNELS" />
+        <Reveal>
+          <p className="lp-kicker">ABOUT THE SEWER</p>
+          <h2 className="lp-headline">BORN IN THE GUTTER.<br />RICH IN THE SLUDGE.</h2>
+          <p className="lp-lead">
+            <b>ScrapRats</b> is a browser idle-clicker where your rat smashes through an endless
+            parade of sewer enemies, hires a crew of misfits to grind while you're gone, and
+            hoards loot like its life depends on it. It does.
+          </p>
+          <p className="lp-lead">
+            No downloads. No wallet needed to play. Just a rat, a sewer, and questionable ambition.
+          </p>
+
+          <div className="lp-contract">
+            <div className="lp-contract__lbl">$SCRAP · PUMP.FUN CONTRACT ADDRESS (SOLANA)</div>
+            <div className="lp-contract__row">
+              <code className="lp-contract__addr">{CONTRACT_ADDRESS}</code>
+              <CopyButton text={CONTRACT_ADDRESS} />
+            </div>
+            <p className="lp-contract__note">
+              Always verify the address against our official socials before you ape. Rats get rugged too.
+            </p>
           </div>
 
-          <div className="lp-about__grid">
-            <div className="lp-panel lp-about__text">
-              <Rivets />
-              <p className="lp-body">
-                <span className="lp-body-hl">ScrapRats</span> is a free-to-play browser
-                idle/clicker game set deep in the grungy underworld. Hire a crew of misfits,
-                gear up your rat with loot, and grind your way up from bottom-feeding
-                scavenger to feared <span className="lp-body-hl">Sewer King</span>.
-              </p>
-              <p className="lp-body">
-                No downloads. No installs. Just you, your rats, and an infinite pile of
-                enemies that need to die. Built on the Solana blockchain — own your loot
-                for real.
-              </p>
-              <div className="lp-about__socials">
-                <SocialIcon href={SOCIAL_LINKS.discord} src="/assets/icons/discordicon.png" alt="Discord" />
-                <SocialIcon href={SOCIAL_LINKS.twitter} src="/assets/icons/Xicon.png"       alt="X / Twitter" />
-                <SocialIcon href={SOCIAL_LINKS.pump}    src="/assets/icons/pumpicon.png"    alt="Pump.fun" />
-              </div>
-            </div>
-
-            <div className="lp-panel lp-contract-card">
-              <Rivets />
-              <div className="lp-contract-card__label">SOLANA CONTRACT ADDRESS</div>
-              <div className="lp-contract-card__chain">Pump.fun · Solana</div>
-              <div className="lp-contract-card__address" title={CONTRACT_ADDRESS}>
-                {CONTRACT_ADDRESS}
-              </div>
-              <a
-                className="lp-btn lp-btn--toxic"
-                href={SOCIAL_LINKS.pump}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img src="/assets/icons/pumpicon.png" alt="" style={{ width: 16, height: 16, imageRendering: 'pixelated', marginRight: 7 }} />
-                VIEW ON PUMP.FUN
-              </a>
-            </div>
+          <div className="lp-socialrow">
+            <a className="lp-socialrow__icon" href={SOCIAL_LINKS.discord} target="_blank" rel="noopener noreferrer" title="Discord">
+              <img src="/assets/icons/discordicon.png" alt="Discord" />
+            </a>
+            <a className="lp-socialrow__icon" href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener noreferrer" title="X / Twitter">
+              <img src="/assets/icons/Xicon.png" alt="X" />
+            </a>
+            <a className="lp-socialrow__icon" href={SOCIAL_LINKS.pump} target="_blank" rel="noopener noreferrer" title="Pump.fun">
+              <img src="/assets/icons/pumpicon.png" alt="Pump.fun" />
+            </a>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── § NAVIGATING THE SEWERS ─────────────────────────────────────────── */}
-      <section className="lp-section lp-sewers" id="guide">
-        <div className="lp-container">
-          <div className="lp-section-head">
-            <div className="lp-eyebrow">▼ NAVIGATING THE SEWERS ▼</div>
-            <h2 className="lp-h2">EVERYTHING YOU NEED TO KNOW</h2>
-            <div className="lp-head-bar"><span /><span /><span /></div>
-          </div>
-
-          <div className="lp-cards-grid">
-            {SEWER_CARDS.map((card, i) => (
-              <div key={i} className="lp-panel lp-card">
-                <Rivets />
-                <div className="lp-card__icon">{card.icon}</div>
-                <div className="lp-card__title">{card.title}</div>
-                <p className="lp-card__body">{card.body}</p>
-                {card.link && (
-                  <a className="lp-card__link" href={card.link} target="_blank" rel="noopener noreferrer">
-                    {card.linkLabel}
-                  </a>
-                )}
+      <section className="lp-sec lp-sec--nav" id="sewers">
+        <DripLine drips={[
+          { left: '22%', delay: '.4s'  },
+          { left: '48%', delay: '1.8s' },
+          { left: '74%', delay: '.9s'  },
+        ]} />
+        <DepthTag depth={42} label="MAINTENANCE LEVEL" />
+        <Reveal>
+          <p className="lp-kicker">NAVIGATING THE SEWERS</p>
+          <h2 className="lp-headline">FIND YOUR WAY AROUND.</h2>
+          <div className="lp-cards">
+            {SEWER_CARDS.map((c, i) => (
+              <div key={i} className="lp-scard">
+                <span className="lp-scard__glyph">{c.glyph}</span>
+                <h3>{c.title}</h3>
+                <p>{c.body}</p>
+                {c.sameTab
+                  ? <a href={c.link} onClick={e => { e.preventDefault(); scrollToTop(); }}>{c.linkLabel}</a>
+                  : <a href={c.link} target="_blank" rel="noopener noreferrer">{c.linkLabel}</a>}
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── § LATEST UPDATES ────────────────────────────────────────────────── */}
-      <section className="lp-section lp-updates" id="updates">
-        <div className="lp-container">
-          <div className="lp-section-head">
-            <div className="lp-eyebrow">▼ LATEST UPDATES ▼</div>
-            <h2 className="lp-h2">WHAT'S NEW IN THE SEWER</h2>
-            <div className="lp-head-bar"><span /><span /><span /></div>
-          </div>
-
-          <div className="lp-panel lp-updates__panel">
-            <Rivets />
+      <section className="lp-sec lp-sec--updates" id="updates">
+        <DripLine drips={[
+          { left: '16%', delay: '1.1s' },
+          { left: '44%', delay: '.2s'  },
+          { left: '69%', delay: '1.6s' },
+          { left: '88%', delay: '.8s'  },
+        ]} />
+        <DepthTag depth={77} label="THE ARCHIVES" />
+        <Reveal>
+          <p className="lp-kicker">LATEST UPDATES</p>
+          <h2 className="lp-headline">NEWS FROM BELOW.</h2>
+          <div className="lp-updates">
             {UPDATES.map((u, i) => (
-              <div key={i} className="lp-update-row">
-                <div className="lp-update-row__meta">
-                  <TagBadge tag={u.tag} />
-                  <span className="lp-update-row__date">{u.date}</span>
-                </div>
-                <div className="lp-update-row__content">
-                  <div className="lp-update-row__title">{u.title}</div>
-                  <div className="lp-update-row__body">{u.body}</div>
+              <div key={i} className={`lp-update${u.current ? '' : ' lp-update--old'}`}>
+                <span className="lp-update__ver">{u.ver}</span>
+                <div className="lp-update__t">
+                  <span className="lp-update__date">{u.date}</span>
+                  <h4>{u.title}</h4>
+                  <p>{u.body}</p>
                 </div>
               </div>
             ))}
           </div>
-
-          <div className="lp-back-wrap">
-            <button className="lp-btn lp-btn--toxic lp-btn--big" onClick={scrollToTop}>
-              ↑ BACK TO THE SEWER
-            </button>
+          <div className="lp-backtogame">
+            <button className="lp-backbtn" onClick={scrollToTop}>BACK TO THE GAME <b>▲</b></button>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────────────────────── */}
       <footer className="lp-footer">
-        <div className="lp-container lp-footer__inner">
-          <div className="lp-footer__brand">
-            <span className="lp-footer__logo">SCRAPRATS</span>
-            <span className="lp-footer__tagline">Idle in the Sewer. Grind in the Dark.</span>
-          </div>
-
-          <div className="lp-footer__socials">
-            <SocialIcon href={SOCIAL_LINKS.discord} src="/assets/icons/discordicon.png" alt="Discord" />
-            <SocialIcon href={SOCIAL_LINKS.twitter} src="/assets/icons/Xicon.png"       alt="X / Twitter" />
-            <SocialIcon href={SOCIAL_LINKS.pump}    src="/assets/icons/pumpicon.png"    alt="Pump.fun" />
-          </div>
-
+        <img className="lp-footer__rat" src="/assets/scrapper.png" alt="" aria-hidden="true" />
+        <div className="lp-footer__brand">SCRAPRATS</div>
+        <div className="lp-footer__tag">Born in the gutter. Rich in the sludge.</div>
+        <div className="lp-footer__rows">
           <div className="lp-footer__links">
-            <a href="#" className="lp-footer__link">Privacy Policy</a>
-            <span className="lp-footer__sep">·</span>
-            <a href="#" className="lp-footer__link">Terms of Service</a>
+            <a className="lp-flink" href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener noreferrer">
+              <img src="/assets/icons/Xicon.png" alt="" /> X / TWITTER
+            </a>
+            <a className="lp-flink" href={SOCIAL_LINKS.discord} target="_blank" rel="noopener noreferrer">
+              <img src="/assets/icons/discordicon.png" alt="" /> DISCORD
+            </a>
+            <a className="lp-flink" href={SOCIAL_LINKS.pump} target="_blank" rel="noopener noreferrer">
+              <img src="/assets/icons/pumpicon.png" alt="" /> PUMP.FUN
+            </a>
           </div>
-
-          <div className="lp-footer__copy">
-            © {new Date().getFullYear()} ScrapRats. All rights reserved.
+          <div className="lp-footer__legal">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
           </div>
+        </div>
+        <div className="lp-footer__copy">
+          <span>© {new Date().getFullYear()} ScrapRats. All rights reserved.</span>
+          <span>DEPTH −99M · ROCK BOTTOM. No rats were harmed in the making of this sewer.</span>
         </div>
       </footer>
 
