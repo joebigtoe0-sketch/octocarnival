@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import './styles.css';
@@ -16,6 +16,19 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 function AppRoot() {
   const [ready, setReady] = useState(false);
+
+  // Nudge mobile browsers to tuck the URL bar (Safari/Chrome shrink chrome on scroll).
+  useEffect(() => {
+    if (!('ontouchstart' in window)) return;
+    const tuck = () => {
+      window.scrollTo(0, 1);
+      requestAnimationFrame(() => window.scrollTo(0, 0));
+    };
+    tuck();
+    window.addEventListener('orientationchange', tuck);
+    return () => window.removeEventListener('orientationchange', tuck);
+  }, []);
+
   if (!ready) return <LoadingScreen onReady={() => setReady(true)} />;
   return (
     <div className="sr-page">

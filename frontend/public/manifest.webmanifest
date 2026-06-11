@@ -1,0 +1,10 @@
+{
+  "name": "ScrapRats",
+  "short_name": "ScrapRats",
+  "description": "Sewer idle-clicker — smash, loot, hire your crew.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e0e07",
+  "theme_color": "#0e0e07",
+  "orientation": "any"
+}

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import LegalModal from './LegalModal.jsx';
+import AboutShuffleRat from './AboutShuffleRat.jsx';
 
 // ── Official links ──────────────────────────────────────────────────────────
 // Paste the real contract address here at launch — every pump.fun link and the
@@ -94,9 +95,13 @@ function useReveal() {
   return [ref, shown];
 }
 
-function Reveal({ children }) {
+function Reveal({ children, className = '' }) {
   const [ref, shown] = useReveal();
-  return <div ref={ref} className={`lp-reveal${shown ? '' : ' lp-reveal--pre'}`}>{children}</div>;
+  return (
+    <div ref={ref} className={`lp-reveal${shown ? '' : ' lp-reveal--pre'}${className ? ` ${className}` : ''}`}>
+      {children}
+    </div>
+  );
 }
 
 // ── Bits ──────────────────────────────────────────────────────────────────────
@@ -175,36 +180,41 @@ export default function LandingPage() {
           { left: '57%', delay: '.6s'  },
           { left: '83%', delay: '2.1s' },
         ]} />
-        <Reveal>
-          <p className="lp-kicker">ABOUT THE SEWER</p>
-          <h2 className="lp-headline">BORN IN THE GUTTER.<br />RICH IN THE SLUDGE.</h2>
-          <p className="lp-lead">
-            <b>ScrapRats</b> is a browser idle-clicker where your rat smashes through an endless
-            parade of sewer enemies, hires a crew of misfits to grind while you're gone, and
-            hoards loot like its life depends on it. It does.
-          </p>
-          <p className="lp-lead">
-            No downloads. No wallet needed to play. Just a rat, a sewer, and questionable ambition.
-          </p>
-
-          <div className="lp-panel lp-contract">
-            <Rivets />
-            <div className="lp-contract__lbl">$SCRAP · PUMP.FUN CONTRACT ADDRESS (SOLANA)</div>
-            <div className="lp-contract__row">
-              <code className="lp-contract__addr">{CONTRACT_ADDRESS}</code>
-              <CopyButton text={CONTRACT_ADDRESS} />
-            </div>
-            <p className="lp-contract__note">
-              Always verify the address against our official socials before you ape. Rats get rugged too.
+        <div className="lp-about__grid">
+          <Reveal className="lp-about__copy">
+            <p className="lp-kicker">ABOUT THE SEWER</p>
+            <h2 className="lp-headline">BORN IN THE GUTTER.<br />RICH IN THE SLUDGE.</h2>
+            <p className="lp-lead">
+              <b>ScrapRats</b> is a browser idle-clicker where your rat smashes through an endless
+              parade of sewer enemies, hires a crew of misfits to grind while you're gone, and
+              hoards loot like its life depends on it. It does.
             </p>
-          </div>
+            <p className="lp-lead">
+              No downloads. No wallet needed to play. Just a rat, a sewer, and questionable ambition.
+            </p>
 
-          <div className="lp-socialrow">
-            <SocialIcon href={SOCIAL_LINKS.discord} src="/assets/icons/discordicon.png" alt="Discord" />
-            <SocialIcon href={SOCIAL_LINKS.twitter} src="/assets/icons/Xicon.png"       alt="X / Twitter" />
-            <SocialIcon href={SOCIAL_LINKS.pump}    src="/assets/icons/pumpicon.png"    alt="Pump.fun" />
+            <div className="lp-panel lp-contract">
+              <Rivets />
+              <div className="lp-contract__lbl">$SCRAP · PUMP.FUN CONTRACT ADDRESS (SOLANA)</div>
+              <div className="lp-contract__row">
+                <code className="lp-contract__addr">{CONTRACT_ADDRESS}</code>
+                <CopyButton text={CONTRACT_ADDRESS} />
+              </div>
+              <p className="lp-contract__note">
+                Always verify the address against our official socials before you ape. Rats get rugged too.
+              </p>
+            </div>
+
+            <div className="lp-socialrow">
+              <SocialIcon href={SOCIAL_LINKS.discord} src="/assets/icons/discordicon.png" alt="Discord" />
+              <SocialIcon href={SOCIAL_LINKS.twitter} src="/assets/icons/Xicon.png"       alt="X / Twitter" />
+              <SocialIcon href={SOCIAL_LINKS.pump}    src="/assets/icons/pumpicon.png"    alt="Pump.fun" />
+            </div>
+          </Reveal>
+          <div className="lp-about__rat">
+            <AboutShuffleRat />
           </div>
-        </Reveal>
+        </div>
       </section>
 
       {/* ── § NAVIGATING THE SEWERS ─────────────────────────────────────────── */}

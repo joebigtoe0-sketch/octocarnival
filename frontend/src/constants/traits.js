@@ -295,6 +295,37 @@ export function rollLootTrait(luck = 0, rate = 0, accountLevel = 1) {
   return null;
 }
 
+/** Random trait for landing-page showcase (always returns, no carrier check). */
+export function rollShowcaseTrait(accountLevel = 50) {
+  const weights = BASE_RARITY_WEIGHTS.filter(
+    ({ rarity }) => accountLevel >= RARITY_GATE_LEVEL[rarity],
+  );
+  const total = weights.reduce((s, e) => s + e.w, 0);
+  let r = Math.random() * total;
+  for (const { rarity, w } of weights) {
+    r -= w;
+    if (r <= 0) {
+      const slotIdx     = Math.floor(Math.random() * SLOT_DEFS.length);
+      const def         = SLOT_DEFS[slotIdx];
+      const tier        = def.tiers[rarity];
+      const variantSeed = Math.floor(Math.random() * 9973);
+      const name = tier.variants
+        ? tier.variants[variantSeed % tier.variants.length]
+        : tier.name;
+      return {
+        slotIdx,
+        lootSlot: slotIdx + 1,
+        slotName: def.slotName,
+        name,
+        rarity,
+        coinValue: tier.coinValue,
+        variantSeed,
+      };
+    }
+  }
+  return null;
+}
+
 export function calcSellValue(traits, greedLevel = 0) {
   const base = traits.reduce((s, t) => s + (t ? t.coinValue : 0), 0);
   const bonus = 1 + greedLevel / 100;

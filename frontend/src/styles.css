@@ -2210,6 +2210,57 @@ html { scroll-behavior: smooth; }
     repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 4px, transparent 4px 130px);
 }
 .lp-sec--about{   background-color:#0c1207; }
+
+/* about section — copy left, shuffling rat right */
+.lp-about__grid{
+  display:grid; grid-template-columns:minmax(0, 1.05fr) minmax(0, .95fr);
+  gap:24px 48px; align-items:center;
+}
+.lp-about__copy{ min-width:0; }
+.lp-about__rat{
+  display:flex; align-items:center; justify-content:center;
+  min-height:340px; position:relative; z-index:2;
+}
+
+/* showcase rat with cycling traits */
+.lp-shuffle-rat{
+  position:relative; display:flex; flex-direction:column; align-items:center;
+  width:min(100%, 360px); padding:12px 0 0;
+}
+.lp-shuffle-rat__platform{
+  position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
+  width:72%; height:28px; border-radius:50%;
+  background:radial-gradient(ellipse, rgba(155,220,31,.22) 0%, transparent 70%);
+  box-shadow:0 0 40px rgba(155,220,31,.15);
+  pointer-events:none;
+}
+.lp-shuffle-rat__sprite{
+  position:relative; z-index:1;
+  animation:lpRatBob 2.4s ease-in-out infinite;
+}
+@keyframes lpRatBob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-8px);} }
+.lp-shuffle-rat__badge{
+  position:absolute; top:0; left:50%; transform:translateX(-50%); z-index:2;
+  background:rgba(4,8,3,.9); border:2px solid var(--rarity-color, #9aa68b);
+  border-radius:6px; padding:6px 12px; text-align:center; white-space:nowrap;
+  box-shadow:0 0 16px var(--rarity-color, transparent), 0 4px 14px rgba(0,0,0,.75);
+  animation:lpBadgePop .95s ease forwards;
+}
+.lp-shuffle-rat__badge-rarity{
+  display:block; font-family:var(--fnt-pixel); font-size:10px;
+  color:var(--rarity-color, #9aa68b); letter-spacing:1px;
+}
+.lp-shuffle-rat__badge-name{
+  display:block; font-family:var(--fnt-pixel2); font-size:14px; color:#e6ffc2; margin-top:2px;
+}
+.lp-shuffle-rat__badge-slot{
+  display:block; font-family:var(--fnt-pixel); font-size:9px; color:#7e9460; margin-top:2px;
+}
+@keyframes lpBadgePop{
+  0%{ opacity:0; transform:translateX(-50%) translateY(8px) scale(.92); }
+  18%{ opacity:1; transform:translateX(-50%) translateY(0) scale(1.04); }
+  100%{ opacity:1; transform:translateX(-50%) translateY(-4px) scale(1); }
+}
 .lp-sec--nav{     background-color:#090e05; }
 .lp-sec--updates{ background-color:#070b04; }
 
@@ -2414,6 +2465,30 @@ html { scroll-behavior: smooth; }
 @media (max-width: 760px){
   .lp-sec{ padding:96px 7% 104px; }
   .lp-site::before{ display:none; }
+  .lp-about__grid{ grid-template-columns:1fr; gap:8px; }
+  .lp-about__rat{ min-height:280px; order:-1; margin-bottom:8px; }
+  .lp-shuffle-rat__sprite{ --sprite-h:220px !important; }
+  .lp-lead{ font-size:16px; }
+  .lp-kicker{ font-size:12px; }
+  .lp-descend{
+    font-size:9px; letter-spacing:1.5px; padding:7px 14px; gap:6px;
+    bottom:10px; max-width:calc(100% - 28px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 2px 0 #1c3a0a, 0 0 16px rgba(155,220,31,.3);
+  }
+}
+
+/* phone game HUD — bump tap targets & readable text */
+@media (max-width: 767px){
+  .stage[data-layout="compact"] .navbtn{ font-size:13px; padding:10px 12px; min-height:46px; }
+  .stage[data-layout="compact"] .gearbtn{ min-width:46px; min-height:46px; font-size:22px; }
+  .stage[data-dir="A"] .coinplate .val{ font-size:22px; }
+  .stage[data-dir="A"] .expplate .lv{ font-size:14px; }
+  .stage[data-layout="compact"] .crewrow__name{ font-size:13px; }
+  .stage[data-layout="compact"] .crewrow__lvlbtn-label{ font-size:10px; }
+  .stage[data-layout="compact"] .crewrow__lvlbtn-cost{ font-size:11px; }
+  .stage[data-layout="compact"] .yourrat__nm{ font-size:19px; }
+  .stage[data-layout="compact"] .sellbtn, .stage[data-layout="compact"] .ratbtn{ font-size:11px; min-height:46px; }
+  .stage[data-layout="compact"] .itemstab{ font-size:12px; padding:10px 8px; }
 }
 
 /* ---------- legal document modal (privacy / terms) ---------- */

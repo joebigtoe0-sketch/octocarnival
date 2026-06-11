@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0e0e07">
+  <link rel="manifest" href="/manifest.webmanifest">
   <title>ScrapRats — Sewer</title>
   <!-- Prevent white flash while JS loads -->
   <style>
@@ -13,7 +15,7 @@
     /* root scrolls naturally; the game section contains its own overflow */
     #root{width:100vw}
     .sr-page{width:100%;min-height:100vh}
-    .sr-game-section{width:100vw;height:100vh;overflow:hidden;position:relative}
+    .sr-game-section{width:100vw;height:100vh;height:100dvh;overflow:hidden;position:relative}
   </style>
   <!-- Preload the two biggest images so the browser fetches them in parallel with JS -->
   <link rel="preload" href="/assets/background.png"  as="image">

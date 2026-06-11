@@ -493,7 +493,8 @@ export default function Game() {
       const vv = window.visualViewport;
       const w  = vv ? vv.width  : window.innerWidth;
       const h  = vv ? vv.height : window.innerHeight;
-      const s  = Math.max(w / STAGE_W, h / STAGE_H);
+      let s  = Math.max(w / STAGE_W, h / STAGE_H);
+      if (w < 768) s *= 1.14; // slightly larger UI on phones
       // How many stage-px of the stage overflow the visible viewport on each axis
       const ovX = Math.max(0, STAGE_W - w / s) / 2;
       const ovY = Math.max(0, STAGE_H - h / s) / 2;
