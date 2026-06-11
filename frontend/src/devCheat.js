@@ -53,10 +53,16 @@ export async function scrapratsDemo() {
     lootboxes: { common: 2, uncommon: 1, rare: 0, epic: 0, legendary: 0, mythic: 0 },
     keys:      { common: 0, uncommon: 0, rare: 1, epic: 0, legendary: 0, mythic: 0 },
     stats: {
-      luck: 12, cardLuck: 8, rate: 10, speed: 6, greed: 5,
-      stealth: 4, dps: 15, clickPower: 20, influence: 3,
+      luck: 78, cardLuck: 62, rate: 71, speed: 54, greed: 58,
+      stealth: 46, dps: 92, clickPower: 105, influence: 48,
     },
-    lifetimeKills: 400,
+    unlockedMilestones: {
+      scrapper_0: true,   // Frenzy @ lvl 10
+      scrapper_1: true,   // +100% click @ lvl 25
+      gutter_pup_0: true, // own DPS @ 10 hired
+    },
+    crewLeaderId: 'gutter_pup',
+    lifetimeKills: 2400,
   });
 }
 
