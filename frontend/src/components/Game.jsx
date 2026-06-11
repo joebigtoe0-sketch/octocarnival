@@ -495,7 +495,9 @@ export default function Game() {
       const w  = vv ? vv.width  : window.innerWidth;
       const h  = vv ? vv.height : window.innerHeight;
       let s  = Math.max(w / STAGE_W, h / STAGE_H);
-      if (w < 768) s *= 1.14; // slightly larger UI on phones
+      const landscapeMobile = w > h && h < 520;
+      if (landscapeMobile) s *= h < 430 ? 1.58 : 1.44; // short phones need bigger HUD
+      else if (w < 768) s *= 1.14;
       // How many stage-px of the stage overflow the visible viewport on each axis
       const ovX = Math.max(0, STAGE_W - w / s) / 2;
       const ovY = Math.max(0, STAGE_H - h / s) / 2;
@@ -503,7 +505,7 @@ export default function Game() {
       setSafeX(Math.max(0, ovX - BLEED_X));
       setSafeY(Math.max(0, ovY - BLEED_Y));
       setScale(s);
-      setLayout(w < 768 ? 'compact' : 'wide');
+      setLayout(landscapeMobile ? 'mobile-landscape' : (w < 768 ? 'compact' : 'wide'));
     };
     fit();
     // ResizeObserver fires on zoom/chrome-resize too, more reliable than 'resize' event

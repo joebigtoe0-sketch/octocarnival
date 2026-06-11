@@ -1610,6 +1610,59 @@ button, .navbtn, .hirebtn, .ratbtn, .sellbtn, .gearbtn, .itemstab, .popup__close
 .stage[data-layout="compact"] .itemsdrawer{ left:calc(var(--safe-x,0px) + 14px); top:155px; }
 .stage[data-layout="compact"] .popup{ width:min(1180px,calc(var(--stage-core-w) - 40px)); height:min(660px,calc(var(--stage-core-h) - 100px)); }
 
+/* ===================== Mobile landscape (phone sideways) ===================== */
+.stage[data-layout="mobile-landscape"] .hud__topleft{ top:calc(var(--safe-y,0px) + 10px); left:calc(var(--safe-x,0px) + 10px); gap:6px; }
+.stage[data-layout="mobile-landscape"] .hud__topright{ top:calc(var(--safe-y,0px) + 10px); right:calc(var(--safe-x,0px) + 10px); gap:5px; }
+.stage[data-layout="mobile-landscape"] .topbar{ flex-wrap:nowrap; gap:5px; max-width:none; }
+.stage[data-layout="mobile-landscape"] .navbtn{ font-size:15px; padding:11px 13px; min-height:50px; letter-spacing:.5px; }
+.stage[data-layout="mobile-landscape"] .gearbtn{ min-width:50px; min-height:50px; font-size:24px; }
+.stage[data-layout="mobile-landscape"] .coinplate .ico{ width:34px; height:34px; }
+.stage[data-layout="mobile-landscape"] .coinplate .val{ font-size:26px; }
+.stage[data-layout="mobile-landscape"] .coinplate--diamond .diamond-ico{ width:34px; height:34px; }
+.stage[data-layout="mobile-landscape"] .expplate{ min-width:0; width:min(100%,300px); }
+.stage[data-layout="mobile-landscape"] .expplate .lv{ font-size:16px; }
+.stage[data-layout="mobile-landscape"] .expplate .xp{ font-size:12px; }
+.stage[data-layout="mobile-landscape"] .bar{ height:18px; }
+.stage[data-layout="mobile-landscape"] .hud__roster{ right:calc(var(--safe-x,0px) + 10px); bottom:calc(var(--safe-y,0px) + 10px); }
+.stage[data-layout="mobile-landscape"] .roster{ width:min(380px,calc(var(--stage-core-w) - 20px)); max-height:240px; padding:10px 12px; }
+.stage[data-layout="mobile-landscape"] .roster__hd{ font-size:15px; margin-bottom:6px; }
+.stage[data-layout="mobile-landscape"] .roster__rate{ font-size:12px; }
+.stage[data-layout="mobile-landscape"] .yourrat{ left:calc(var(--safe-x,0px) + 10px); bottom:calc(var(--safe-y,0px) + 10px); width:min(340px,calc(var(--stage-core-w) - 20px)); }
+.stage[data-layout="mobile-landscape"] .yourrat__layout{ gap:10px; }
+.stage[data-layout="mobile-landscape"] .yourrat__portrait{ width:110px; flex:0 0 110px; }
+.stage[data-layout="mobile-landscape"] .yourrat__hd{ font-size:13px; }
+.stage[data-layout="mobile-landscape"] .yourrat__nm{ font-size:22px; }
+.stage[data-layout="mobile-landscape"] .yourrat__gear{ font-size:12px; }
+.stage[data-layout="mobile-landscape"] .ratbtn{ font-size:13px; padding:12px; min-height:48px; margin-top:8px; }
+.stage[data-layout="mobile-landscape"] .sellbtn{ font-size:15px; padding:12px; min-height:48px; }
+.stage[data-layout="mobile-landscape"] .sellbtn .ico{ width:20px; height:20px; }
+.stage[data-layout="mobile-landscape"] .charge{ height:15px; }
+.stage[data-layout="mobile-landscape"] .crewrow{ grid-template-columns:48px 38px 1fr auto; column-gap:8px; padding:8px 9px; }
+.stage[data-layout="mobile-landscape"] .crewrow__portrait{ width:48px; height:48px; }
+.stage[data-layout="mobile-landscape"] .crewrow__portrait img{ height:48px; }
+.stage[data-layout="mobile-landscape"] .crewrow__name{ font-size:14px; }
+.stage[data-layout="mobile-landscape"] .crewrow__sub{ font-size:11px; }
+.stage[data-layout="mobile-landscape"] .crewrow__lvlbtn{ min-height:48px; padding:6px 10px; }
+.stage[data-layout="mobile-landscape"] .crewrow__lvlbtn-label{ font-size:11px; }
+.stage[data-layout="mobile-landscape"] .crewrow__lvlbtn-cost{ font-size:12px; }
+.stage[data-layout="mobile-landscape"] .crewrow__coin-ico{ width:13px; height:13px; }
+.stage[data-layout="mobile-landscape"] .hirebtn{ font-size:13px; padding:10px 14px; min-height:44px; }
+.stage[data-layout="mobile-landscape"] .itemsdrawer{ left:calc(var(--safe-x,0px) + 10px); top:140px; }
+.stage[data-layout="mobile-landscape"] .itemstab{ font-size:13px; padding:11px 9px; min-height:48px; }
+.stage[data-layout="mobile-landscape"] .combat-zone{ height:340px; }
+.stage[data-layout="mobile-landscape"] .npc-loot-badge{ top:-78px; padding:6px 11px; }
+.stage[data-layout="mobile-landscape"] .npc-loot-badge__rarity{ font-size:10px; }
+.stage[data-layout="mobile-landscape"] .npc-loot-badge__name{ font-size:13px; }
+.stage[data-layout="mobile-landscape"] .npc-loot-badge__slot{ font-size:9px; }
+.stage[data-layout="mobile-landscape"] .enemy__level{ font-size:12px; }
+.stage[data-layout="mobile-landscape"] .enemy__hp-label{ font-size:11px; }
+.stage[data-layout="mobile-landscape"] .popup{ width:min(1180px,calc(var(--stage-core-w) - 24px)); height:min(660px,calc(var(--stage-core-h) - 60px)); }
+.stage[data-layout="mobile-landscape"] .crewrow__active{ width:40px; height:40px; }
+.stage[data-layout="mobile-landscape"] .crew-skill-btn{ width:32px; height:32px; font-size:14px; }
+.stage[data-layout="mobile-landscape"] .crew-milestone{ width:30px; height:30px; }
+.stage[data-layout="mobile-landscape"] .crew-milestone__icon{ width:20px; height:20px; }
+.stage[data-layout="mobile-landscape"] .plate{ padding:10px 14px; }
+
 /* ===================== Level-up cards overlay ===================== */
 .levelup-overlay{
   position:absolute; inset:0; z-index:50;
@@ -2127,6 +2180,16 @@ button, .navbtn, .hirebtn, .ratbtn, .sellbtn, .gearbtn, .itemstab, .popup__close
 /* Hide descend CTA while portrait gate is active */
 @media (orientation: portrait) and (max-width: 900px){
   .lp-descend{ display:none !important; }
+}
+
+/* Descend CTA — tiny on phone landscape (width > 760px so portrait rules miss it) */
+@media (orientation: landscape) and (max-height: 520px){
+  .lp-descend{
+    font-size:6px; letter-spacing:1px; padding:3px 9px; gap:3px;
+    bottom:2px; border-width:1px; border-radius:3px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 1px 0 #1c3a0a, 0 0 10px rgba(155,220,31,.22);
+  }
+  @keyframes lpDescendBob{ 0%,100%{ transform:translateX(-50%) translateY(0);} 50%{ transform:translateX(-50%) translateY(-2px);} }
 }
 
 /* ── Loading Screen ─────────────────────────────────────────────────────── */
