@@ -20,7 +20,7 @@ const SPRITE_VARIANTS = {
     2: ['Bodyitem2.png'],
     3: ['Bodyitem3.png'],
     4: ['Bodyitem4.png'],
-    5: ['Bodyitem5.png'],
+    5: ['Bodyitem5.1.png', 'Bodyitem5.2.png'],
     6: ['Bodyitem6.png'],
   },
   Ears: {
@@ -36,7 +36,7 @@ const SPRITE_VARIANTS = {
     2: ['Eyes2.1.png', 'Eyes2.2.png', 'Eyes2.3.png', 'Eyes2.4.png'],
     3: ['Eyes3.1.png', 'Eyes3.2.png'],
     4: ['Eyes4.1.png', 'Eyes4.2.png', 'Eyes4.3.png'],
-    5: ['Eyes5.1.png', 'Eyes5.2.png'],
+    5: ['Eyes5.1.png', 'Eyes5.2.png', 'Eyes5.3.png'],
     6: ['Eyes6.png'],
   },
   Feet: {
@@ -52,7 +52,7 @@ const SPRITE_VARIANTS = {
     2: ['Hair2.png'],
     3: ['Hair3.png'],
     4: ['Hair4.png'],
-    5: ['Hair5.png'],
+    5: ['Hair5.1.png', 'Hair5.2.png'],
     6: ['Hair6.png'],
   },
   Handitem: {
@@ -108,7 +108,7 @@ const SPRITE_VARIANTS = {
     2: ['Skate2.1.png', 'Skate2.2.png'],
     3: ['Skate3.1.png', 'Skate3.2.png'],
     4: ['Skate4.png'],
-    5: ['Skate5.png'],
+    5: ['Skate5.1.png', 'Skate5.2.png'],
     6: ['Skate6.1.png', 'Skate6.2.png'],
   },
   Skin: {
