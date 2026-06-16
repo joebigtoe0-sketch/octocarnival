@@ -3,7 +3,6 @@ const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 const crypto  = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
-const { PublicKey } = require('@solana/web3.js');
 const nacl    = require('tweetnacl');
 const bs58    = require('bs58');
 const { query }  = require('../db');
@@ -42,7 +41,8 @@ function buildWalletAuthMessage(walletAddress, nonce) {
 function verifyWalletSignature(message, signatureBase58, walletAddress) {
   try {
     const sig = bs58.decode(signatureBase58);
-    const pub = new PublicKey(walletAddress).toBytes();
+    const pub = bs58.decode(walletAddress);
+    if (pub.length !== 32 || sig.length !== 64) return false;
     const msg = new TextEncoder().encode(message);
     return nacl.sign.detached.verify(msg, sig, pub);
   } catch {
@@ -51,8 +51,11 @@ function verifyWalletSignature(message, signatureBase58, walletAddress) {
 }
 
 function parseWalletAddress(address) {
+  if (!address || typeof address !== 'string') return null;
   try {
-    return new PublicKey(address).toBase58();
+    const bytes = bs58.decode(address.trim());
+    if (bytes.length !== 32) return null;
+    return bs58.encode(bytes);
   } catch {
     return null;
   }
