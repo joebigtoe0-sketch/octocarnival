@@ -2,11 +2,10 @@ const {
   Connection, PublicKey, TransactionMessage, VersionedTransaction,
 } = require('@solana/web3.js');
 const {
-  getAssociatedTokenAddressSync,
   createBurnCheckedInstruction,
-  getMint,
 } = require('@solana/spl-token');
 const bs58 = require('../utils/bs58compat');
+const { resolveScrapMint, getScrapAta, scrapMintAddress } = require('../utils/splMint');
 
 let umiCache = null;
 
@@ -49,17 +48,22 @@ function getBurnAmountBaseUnits(decimals) {
 
 async function buildBurnTransaction(walletAddress) {
   const connection = getConnection();
-  const mintPubkey = new PublicKey(
-    process.env.SCRAP_MINT_ADDRESS || '6wDhSCLLZRQMJQwafEtoyBz4u9tQnYDwJMs98cYHpump'
-  );
+  const mintCtx = await resolveScrapMint(connection);
   const owner = new PublicKey(walletAddress);
-  const mintInfo = await getMint(connection, mintPubkey);
-  const amount   = getBurnAmountBaseUnits(mintInfo.decimals);
+  const amount = getBurnAmountBaseUnits(mintCtx.mintInfo.decimals);
 
-  const ata = getAssociatedTokenAddressSync(mintPubkey, owner);
+  const ata = getScrapAta(owner, mintCtx);
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
 
-  const ix = createBurnCheckedInstruction(ata, mintPubkey, owner, amount, mintInfo.decimals);
+  const ix = createBurnCheckedInstruction(
+    ata,
+    mintCtx.mintPubkey,
+    owner,
+    amount,
+    mintCtx.mintInfo.decimals,
+    [],
+    mintCtx.tokenProgramId,
+  );
   const msg = new TransactionMessage({
     payerKey:         owner,
     recentBlockhash:  blockhash,
@@ -72,7 +76,7 @@ async function buildBurnTransaction(walletAddress) {
     blockhash,
     lastValidBlockHeight,
     burnAmount:           amount.toString(),
-    scrapMint:            mintPubkey.toBase58(),
+    scrapMint:            mintCtx.mintPubkey.toBase58(),
   };
 }
 
@@ -129,9 +133,9 @@ async function verifyBurnTransaction(signature, walletAddress) {
   });
   if (!tx || tx.meta?.err) throw new Error('Burn transaction failed or not found');
 
-  const mintStr = process.env.SCRAP_MINT_ADDRESS || '6wDhSCLLZRQMJQwafEtoyBz4u9tQnYDwJMs98cYHpump';
-  const mintInfo = await getMint(connection, new PublicKey(mintStr));
-  const expected = getBurnAmountBaseUnits(mintInfo.decimals);
+  const mintStr = scrapMintAddress();
+  const mintCtx = await resolveScrapMint(connection, mintStr);
+  const expected = getBurnAmountBaseUnits(mintCtx.mintInfo.decimals);
 
   const inner = tx.meta?.innerInstructions || [];
   const top   = tx.transaction.message.instructions || [];
@@ -139,17 +143,11 @@ async function verifyBurnTransaction(signature, walletAddress) {
 
   let burned = 0n;
   for (const ix of allIx) {
-    if (ix.program === 'spl-token' && ix.parsed?.type === 'burnChecked') {
-      const info = ix.parsed.info;
-      if (info.mint === mintStr && info.authority === walletAddress) {
-        burned += BigInt(info.tokenAmount?.amount || info.amount || 0);
-      }
-    }
-    if (ix.program === 'spl-token' && ix.parsed?.type === 'burn') {
-      const info = ix.parsed.info;
-      if (info.mint === mintStr && info.authority === walletAddress) {
-        burned += BigInt(info.amount || 0);
-      }
+    const isBurn = ix.parsed?.type === 'burnChecked' || ix.parsed?.type === 'burn';
+    if (!isBurn) continue;
+    const info = ix.parsed.info;
+    if (info.mint === mintStr && info.authority === walletAddress) {
+      burned += BigInt(info.tokenAmount?.amount || info.amount || 0);
     }
   }
 

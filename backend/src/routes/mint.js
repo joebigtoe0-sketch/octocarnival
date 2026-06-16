@@ -214,7 +214,8 @@ router.post('/build', auth, rl, async (req, res) => {
       fingerprint:          res.trait_fingerprint,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[mint/build]', err);
+    res.status(500).json({ error: err.message || err.name || 'Mint build failed' });
   }
 });
 
