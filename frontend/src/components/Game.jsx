@@ -526,7 +526,10 @@ export default function Game() {
 
   const popupMap = {
     SHOP:     <ShopPanel     onClose={() => { playSound('uiClick'); ui.closePopup(); }} />,
-    BASE:     <BasePanel     onClose={() => { playSound('uiClick'); ui.closePopup(); }} />,
+    BASE:     <BasePanel
+      onClose={() => { playSound('uiClick'); ui.closePopup(); }}
+      onOpenAuth={tab => { ui.closePopup(); ui.openAuth(tab); }}
+    />,
     GALLERY:  <GalleryPanel  onClose={() => { playSound('uiClick'); ui.closePopup(); }} />,
     STATS:    <StatsPanel    onClose={() => { playSound('uiClick'); ui.closePopup(); }} />,
     BOUNTIES: <BountyPanel onClose={() => { playSound('uiClick'); ui.closePopup(); }} />,
@@ -809,6 +812,23 @@ function SettingsModal({ onClose, onReset, prestigeLevel, onPrestige, canPrestig
           </div>
         </div>
 
+        {/* ── Solana wallet (connect here for NFT minting) ── */}
+        <div className="modal__section-hd">SOLANA WALLET</div>
+        <div className="modal__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+          <span style={{ color: '#7e9460', fontSize: 12 }}>
+            Connect Phantom to mint ScrapRat NFTs from Base (burns 10,000 $SCRAP).
+            Wallet login/register is also in the Login / Register popup.
+          </span>
+          <div className="wallet-btn-wrap">
+            <WalletMultiButton />
+          </div>
+          {wallet.connected && wallet.publicKey && (
+            <span style={{ fontSize: 10, color: '#5a6450', wordBreak: 'break-all' }}>
+              {wallet.publicKey.toBase58()}
+            </span>
+          )}
+        </div>
+
         {/* ── Account section ── */}
         <div className="modal__section-hd">ACCOUNT</div>
         {isGuest ? (
@@ -831,22 +851,6 @@ function SettingsModal({ onClose, onReset, prestigeLevel, onPrestige, canPrestig
             <button className="minibtn" onClick={onLogout}>LOG OUT</button>
           </div>
         )}
-
-        {/* ── Solana wallet ── */}
-        <div className="modal__section-hd">SOLANA WALLET</div>
-        <div className="modal__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
-          <span style={{ color: '#7e9460', fontSize: 12 }}>
-            Connect Phantom to mint ScrapRat NFTs from your base (burns 10,000 $SCRAP).
-          </span>
-          <div className="wallet-btn-wrap">
-            <WalletMultiButton />
-          </div>
-          {wallet.connected && wallet.publicKey && (
-            <span style={{ fontSize: 10, color: '#5a6450', wordBreak: 'break-all' }}>
-              {wallet.publicKey.toBase58()}
-            </span>
-          )}
-        </div>
 
         {/* ── Prestige section ── */}
         <div className="modal__section-hd">PRESTIGE</div>

@@ -1177,6 +1177,13 @@ button, .navbtn, .hirebtn, .ratbtn, .sellbtn, .gearbtn, .itemstab, .popup__close
 .base-rat-detail__trait-rarity{ font-family:var(--fnt-pixel); font-size:7px; flex-shrink:0; }
 .base-rat-detail__trait-name{ flex:1; color:#d4e8b0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .base-rat-detail__trait-slot{ color:#5a6450; font-size:8px; flex-shrink:0; white-space:nowrap; }
+.base-rat-detail__mint-row{
+  margin-top:12px; padding-top:12px; border-top:1px solid #2d3d20;
+}
+.base-mint-hint{
+  font-family:var(--fnt-pixel); font-size:9px; color:var(--gold);
+  letter-spacing:.5px; white-space:nowrap;
+}
 
 /* Leader boosts in a 3-column grid */
 .leader-boosts{

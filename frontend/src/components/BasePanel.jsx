@@ -65,7 +65,7 @@ function computeRatBoosts(traits = []) {
   return boosts;
 }
 
-function RatCard({ rat, sellCharges, greed, isLeader, isGuest, onEquip, onSell, onRename, onAssignLeader, onMinted }) {
+function RatCard({ rat, sellCharges, greed, isLeader, isGuest, onEquip, onSell, onRename, onAssignLeader, onMinted, onOpenAuth }) {
   const [detailOpen, setDetailOpen] = useState(false);
   const [mintOpen,   setMintOpen]   = useState(false);
   const value      = calcSellValue(rat.traits, greed);
@@ -161,6 +161,43 @@ function RatCard({ rat, sellCharges, greed, isLeader, isGuest, onEquip, onSell, 
                   )
                 }
 
+                {/* Mint NFT — above leader assign so it's visible without scrolling */}
+                <div className="base-rat-detail__mint-row">
+                  {isMinted ? (
+                    <div style={{ textAlign: 'center' }}>
+                      <span style={{ color: 'var(--gold)', fontFamily: 'var(--fnt-pixel)', fontSize: 11 }}>✦ MINTED NFT</span>
+                      {rat.mintAddress && (
+                        <a
+                          href={explorerAssetUrl(rat.mintAddress)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ display: 'block', fontSize: 10, marginTop: 6, color: 'var(--toxic)' }}
+                        >
+                          View on explorer ↗
+                        </a>
+                      )}
+                    </div>
+                  ) : isGuest ? (
+                    <button
+                      className="hirebtn minibtn--gold"
+                      onClick={() => { setDetailOpen(false); onOpenAuth?.('register'); }}
+                      style={{ width: '100%' }}
+                    >
+                      LOG IN TO MINT NFT
+                    </button>
+                  ) : (
+                    <button
+                      className="hirebtn minibtn--gold"
+                      disabled={activeSlots.length === 0}
+                      title={activeSlots.length === 0 ? 'Equip traits first' : undefined}
+                      onClick={() => { setDetailOpen(false); setMintOpen(true); }}
+                      style={{ width: '100%' }}
+                    >
+                      MINT NFT — 10,000 $SCRAP
+                    </button>
+                  )}
+                </div>
+
                 {/* Assign / Unassign button */}
                 <button
                   className={`hirebtn leader-assign-btn${isLeader ? ' leader-assign-btn--unassign' : ''}`}
@@ -169,33 +206,6 @@ function RatCard({ rat, sellCharges, greed, isLeader, isGuest, onEquip, onSell, 
                 >
                   {isLeader ? '✕ UNASSIGN LEADER' : 'ASSIGN AS CREW LEADER'}
                 </button>
-
-                {/* Mint NFT */}
-                {isMinted ? (
-                  <div style={{ marginTop: 14, textAlign: 'center' }}>
-                    <span style={{ color: 'var(--gold)', fontFamily: 'var(--fnt-pixel)', fontSize: 11 }}>✦ MINTED NFT</span>
-                    {rat.mintAddress && (
-                      <a
-                        href={explorerAssetUrl(rat.mintAddress)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ display: 'block', fontSize: 10, marginTop: 6, color: 'var(--toxic)' }}
-                      >
-                        View on explorer ↗
-                      </a>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    className="hirebtn minibtn--gold"
-                    disabled={activeSlots.length === 0 || isGuest}
-                    title={isGuest ? 'Log in to mint NFTs' : activeSlots.length === 0 ? 'Equip traits first' : undefined}
-                    onClick={() => { setDetailOpen(false); setMintOpen(true); }}
-                    style={{ marginTop: 14, width: '100%' }}
-                  >
-                    MINT NFT
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -331,7 +341,7 @@ function Swapper({ allRats, sellCharges, hasToken, onSwap, onClose }) {
 }
 
 // ---- Main panel ------------------------------------------------------------
-export default function BasePanel({ onClose }) {
+export default function BasePanel({ onClose, onOpenAuth }) {
   const store   = useGameStore();
   const { activeRat, baseRats, stats, sellCharges, maxSellCharges, maxBaseSlots,
           crewLeaderId, assignCrewLeader, markRatMinted, isGuest } = store;
@@ -351,6 +361,11 @@ export default function BasePanel({ onClose }) {
             {!swapperOpen && <span className="badge">{baseRats.length} / {maxBase}</span>}
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            {!swapperOpen && (
+              <span className="base-mint-hint">
+                {isGuest ? 'Log in to mint rats as NFTs' : 'Open a rat → MINT NFT'}
+              </span>
+            )}
             {!swapperOpen && (
               <button
                 className="hirebtn"
@@ -411,6 +426,7 @@ export default function BasePanel({ onClose }) {
                     onRename={name => store.renameBaseRat(rat.id, name)}
                     onAssignLeader={assignCrewLeader}
                     onMinted={markRatMinted}
+                    onOpenAuth={onOpenAuth}
                   />
                 ))}
                 {Array.from({ length: Math.max(0, maxBase - baseRats.length) }).map((_, i) => (
