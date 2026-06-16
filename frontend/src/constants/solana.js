@@ -10,6 +10,9 @@ export const NETWORK = import.meta.env.VITE_SOLANA_NETWORK
   || (import.meta.env.PROD ? 'mainnet-beta' : 'devnet');
 
 export function getRpcEndpoint() {
-  // Private RPC URLs (Helius, etc.) belong on the backend only — browsers get 403/CORS.
+  // Browser → our backend → Helius (SOLANA_RPC_URL). Public Solana RPC blocks browsers (403).
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}/api/solana/rpc`;
+  }
   return clusterApiUrl(NETWORK);
 }

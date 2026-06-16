@@ -13,6 +13,7 @@ const crewRoutes  = require('./routes/crew');
 const ratsRoutes  = require('./routes/rats');
 const shopRoutes  = require('./routes/shop');
 const mintRoutes  = require('./routes/mint');
+const solanaRoutes = require('./routes/solana');
 const { initSocket } = require('./socket');
 const { getRedis }   = require('./db');
 
@@ -38,6 +39,7 @@ app.use('/api/crew',     crewRoutes);
 app.use('/api/rats',     ratsRoutes);
 app.use('/api/shop',     shopRoutes);
 app.use('/api/mint',     mintRoutes);
+app.use('/api/solana',   solanaRoutes);
 
 // ---- Socket.io ----
 initSocket(io);
