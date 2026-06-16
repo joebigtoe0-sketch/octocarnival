@@ -142,43 +142,44 @@ export default function MintModal({ rat, onClose, onMinted }) {
           <button className="popup__close" onClick={onClose}>✕</button>
         </div>
 
-        <div className="base-rat-detail__body">
-          <div className="base-rat-detail__sprite">
-            <RatSprite activeSlots={activeSlots} height={140} seed={ratSeed} />
-          </div>
+        <div className="mint-modal__body">
+          <div className="mint-modal__preview">
+            <div className="base-rat-detail__sprite mint-modal__sprite">
+              <RatSprite activeSlots={activeSlots} height={160} seed={ratSeed} />
+            </div>
 
-          <div className="mint-modal__info">
-            <p className="mint-modal__cost">
-              Cost: <strong>{BURN_AMOUNT.toLocaleString()} $SCRAP</strong> burned + SOL gas
-            </p>
-            {wallet.connected && scrapBalance !== null && (
-              <p className="mint-modal__balance" style={{ color: scrapBalance >= BURN_AMOUNT ? 'var(--toxic)' : '#e05050' }}>
-                Your balance: {scrapBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} $SCRAP
+            <div className="mint-modal__info">
+              <p className="mint-modal__cost">
+                Cost: <strong>{BURN_AMOUNT.toLocaleString()} $SCRAP</strong> burned + SOL gas
               </p>
-            )}
-            {!wallet.connected && (
-              <p style={{ color: '#e0a050', fontSize: 12 }}>Connect wallet in Settings first.</p>
-            )}
-            {fingerprint && (
-              <p className="mint-modal__fp" title={fingerprint}>
-                Fingerprint: {fingerprint.slice(0, 12)}…
-              </p>
-            )}
-            {message && step !== 'success' && (
-              <p className="mint-modal__msg" style={{ color: step === 'error' ? '#e05050' : '#9ab080' }}>{message}</p>
-            )}
+              {wallet.connected && scrapBalance !== null && (
+                <p className="mint-modal__balance" style={{ color: scrapBalance >= BURN_AMOUNT ? 'var(--toxic)' : '#e05050' }}>
+                  Your balance: {scrapBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} $SCRAP
+                </p>
+              )}
+              {!wallet.connected && (
+                <p className="mint-modal__hint">Connect wallet in Settings first.</p>
+              )}
+              {fingerprint && (
+                <p className="mint-modal__fp" title={fingerprint}>
+                  Fingerprint: {fingerprint.slice(0, 12)}…
+                </p>
+              )}
+              {message && step !== 'success' && (
+                <p className={`mint-modal__msg${step === 'error' ? ' mint-modal__msg--error' : ''}`}>{message}</p>
+              )}
+            </div>
           </div>
 
           {step === 'success' && mintResult && (
             <div className="mint-modal__success">
-              <p style={{ color: 'var(--toxic)', fontFamily: 'var(--fnt-pixel)' }}>✓ MINTED!</p>
-              <p style={{ fontSize: 11, wordBreak: 'break-all' }}>{mintResult.mintAddress}</p>
+              <p className="mint-modal__success-title">✓ MINTED!</p>
+              <p className="mint-modal__mint-addr">{mintResult.mintAddress}</p>
               <a
                 href={explorerAssetUrl(mintResult.mintAddress)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hirebtn"
-                style={{ display: 'inline-block', marginTop: 8, fontSize: 11 }}
+                className="hirebtn mint-modal__explorer-btn"
               >
                 VIEW ON EXPLORER
               </a>
@@ -188,21 +189,21 @@ export default function MintModal({ rat, onClose, onMinted }) {
           <div className="mint-modal__actions">
             {step === 'preview' && (
               <>
-                <button className="hirebtn" disabled={!canMint} onClick={startMint}>
+                <button className="hirebtn mint-modal__btn" disabled={!canMint} onClick={startMint}>
                   {rat.minted ? 'ALREADY MINTED' : !available ? 'COMBO TAKEN' : 'CONFIRM & MINT'}
                 </button>
-                <button className="hirebtn" style={{ opacity: 0.7 }} onClick={onClose}>CANCEL</button>
+                <button className="hirebtn mint-modal__btn mint-modal__btn--ghost" onClick={onClose}>CANCEL</button>
               </>
             )}
             {step === 'signing' && (
-              <p style={{ fontFamily: 'var(--fnt-pixel)', fontSize: 11, color: 'var(--gold)' }}>Sign in your wallet…</p>
+              <p className="mint-modal__signing">Sign in your wallet…</p>
             )}
             {(step === 'success' || step === 'error') && (
-              <button className="hirebtn" onClick={onClose}>CLOSE</button>
+              <button className="hirebtn mint-modal__btn" onClick={onClose}>CLOSE</button>
             )}
           </div>
 
-          <p className="mint-modal__disclaimer" style={{ fontSize: 10, color: '#5a6450', marginTop: 12 }}>
+          <p className="mint-modal__disclaimer">
             Burns 10,000 $SCRAP permanently. Rat stays in your base but cannot be sold, equipped, or swapped.
           </p>
         </div>

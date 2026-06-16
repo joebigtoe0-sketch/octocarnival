@@ -19,7 +19,12 @@ if (!src) {
     console.log('[bundle-sprites] using existing', dest);
     process.exit(0);
   }
-  console.warn('[bundle-sprites] source sprites not found — mint images may fail in prod');
+  const msg = '[bundle-sprites] source sprites not found — mint images will fail in prod';
+  if (process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT) {
+    console.error(msg);
+    process.exit(1);
+  }
+  console.warn(msg);
   process.exit(0);
 }
 
@@ -31,3 +36,7 @@ for (const file of fs.readdirSync(src)) {
   count++;
 }
 console.log(`[bundle-sprites] copied ${count} sprites → ${dest}`);
+if (count === 0) {
+  console.error('[bundle-sprites] no PNG files copied');
+  process.exit(1);
+}

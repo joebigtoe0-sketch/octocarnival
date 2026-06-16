@@ -14,7 +14,7 @@
     "test:mint": "node scripts/test-mint-flow.js",
     "setup:collection": "node scripts/ensure-uuid-cjs.js && node scripts/setup-metaplex-collection.js",
     "bundle-sprites": "node scripts/bundle-sprites.js",
-    "postinstall": "node scripts/ensure-uuid-cjs.js"
+    "postinstall": "node scripts/ensure-uuid-cjs.js && node scripts/bundle-sprites.js"
   },
   "dependencies": {
     "@metaplex-foundation/mpl-core": "^1.10.0",

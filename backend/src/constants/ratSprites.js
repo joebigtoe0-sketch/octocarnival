@@ -44,9 +44,24 @@ const SPRITE_LAYERS = [
   { prefix: 'Hair',          slotName: 'Hair / Hat'     },
 ];
 
-const DEPLOY_DIR = path.join(__dirname, '../../assets/sprites');
-const DEV_DIR    = path.join(__dirname, '../../../frontend/public/assets/sprites');
-const SPRITE_DIR = fs.existsSync(DEPLOY_DIR) ? DEPLOY_DIR : DEV_DIR;
+const SPRITE_CANDIDATES = [
+  path.join(__dirname, '../../assets/sprites'),
+  path.join(__dirname, '../../../frontend/public/assets/sprites'),
+];
+
+function dirHasSprites(dir) {
+  if (!fs.existsSync(dir)) return false;
+  return fs.readdirSync(dir).some(f => f.endsWith('.png'));
+}
+
+function resolveSpriteDir() {
+  for (const dir of SPRITE_CANDIDATES) {
+    if (dirHasSprites(dir)) return dir;
+  }
+  return SPRITE_CANDIDATES[0];
+}
+
+const SPRITE_DIR = resolveSpriteDir();
 
 function resolveSpriteFile(layer, slotMap, fallbackSeed) {
   const entry = slotMap.get(layer.slotName);

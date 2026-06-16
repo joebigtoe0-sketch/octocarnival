@@ -2699,8 +2699,47 @@ html { scroll-behavior: smooth; }
   background:rgba(0,0,0,.7); color:var(--gold); padding:3px 6px; border-radius:3px;
   border:1px solid var(--gold);
 }
-.mint-modal{ max-width:420px; }
-.mint-modal__actions{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
-.mint-modal__cost{ font-family:var(--fnt-pixel); font-size:11px; margin:0 0 8px; }
-.mint-modal__fp{ font-size:10px; color:#5a6450; margin:4px 0 0; }
+.mint-modal{
+  width:min(600px,96vw); max-width:96vw;
+}
+.mint-modal__body{
+  display:flex; flex-direction:column; gap:16px;
+  padding:16px 18px 18px; max-height:85vh; overflow-y:auto;
+}
+.mint-modal__preview{
+  display:flex; gap:20px; align-items:flex-start;
+}
+.mint-modal__sprite{
+  width:200px; min-height:200px; flex-shrink:0;
+}
+.mint-modal__info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+.mint-modal__actions{
+  display:flex; gap:10px; flex-wrap:wrap; width:100%;
+}
+.mint-modal__actions .mint-modal__btn{
+  flex:1 1 160px; min-height:44px; white-space:normal; text-align:center; line-height:1.25;
+}
+.mint-modal__btn--ghost{ opacity:.75; }
+.mint-modal__cost{ font-family:var(--fnt-pixel); font-size:12px; margin:0; line-height:1.5; }
+.mint-modal__balance{ font-family:var(--fnt-pixel2); font-size:12px; margin:0; }
+.mint-modal__hint{ color:#e0a050; font-size:12px; margin:0; font-family:var(--fnt-pixel2); }
+.mint-modal__fp{ font-size:10px; color:#5a6450; margin:0; word-break:break-all; }
+.mint-modal__msg{ font-size:12px; color:#9ab080; margin:0; line-height:1.45; }
+.mint-modal__msg--error{ color:#e05050; }
+.mint-modal__success{
+  padding:12px; border-radius:6px; background:rgba(0,0,0,.25);
+  border:1px solid #2d3d20;
+}
+.mint-modal__success-title{ color:var(--toxic); font-family:var(--fnt-pixel); margin:0 0 8px; }
+.mint-modal__mint-addr{ font-size:11px; word-break:break-all; margin:0 0 8px; color:#c8d8b0; }
+.mint-modal__explorer-btn{ display:inline-block; font-size:11px; margin-top:4px; }
+.mint-modal__signing{ font-family:var(--fnt-pixel); font-size:11px; color:var(--gold); margin:0; width:100%; text-align:center; }
+.mint-modal__disclaimer{ font-size:10px; color:#5a6450; margin:0; line-height:1.45; }
+
+@media (max-width:560px){
+  .mint-modal__preview{ flex-direction:column; align-items:center; }
+  .mint-modal__sprite{ width:min(220px,100%); }
+  .mint-modal__info{ width:100%; text-align:center; }
+  .mint-modal__actions .mint-modal__btn{ flex:1 1 100%; }
+}
 

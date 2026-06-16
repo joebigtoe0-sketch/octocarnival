@@ -50,7 +50,8 @@ async function renderRatImage(traits, seed = 0) {
   }
 
   if (layerPaths.length === 0) {
-    throw new Error('No sprite layers found for rat composite');
+    const { SPRITE_DIR } = require('../constants/ratSprites');
+    throw new Error(`No sprite layers found for rat composite (sprite dir: ${SPRITE_DIR})`);
   }
 
   const first = sharp(layerPaths[0]);

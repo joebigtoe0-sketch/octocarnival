@@ -5,11 +5,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libvips42 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install deps before full copy, but skip postinstall (scripts/ not present yet)
+# Monorepo build: backend service + rat sprite PNGs for NFT compositing
 COPY package*.json ./
-RUN npm install --ignore-scripts
+COPY backend/package*.json ./backend/
+RUN npm install --ignore-scripts --workspace=scraprats-backend
 
-COPY . .
+COPY backend ./backend
+COPY frontend/public/assets/sprites ./frontend/public/assets/sprites
+RUN node backend/scripts/bundle-sprites.js
+
+WORKDIR /app/backend
 RUN node scripts/ensure-uuid-cjs.js && npm rebuild sharp
 RUN chmod +x start.sh
 
