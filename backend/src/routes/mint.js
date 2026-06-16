@@ -18,6 +18,7 @@ const {
 } = require('../services/metaplexMint');
 const { fetchTokenBalance, DEFAULT_MINT } = require('../utils/tokenBalance');
 const { normalizePublicUrl } = require('../utils/publicUrl');
+const { toJsonb } = require('../utils/jsonb');
 
 const router = express.Router();
 
@@ -197,17 +198,17 @@ router.post('/reserve', auth, rl, async (req, res) => {
       reservationId = activeHold.reservation_id;
       await query(
         `UPDATE mint_reservations
-         SET rat_id=$1, rat_name=$2, traits_json=$3, metadata_uri=$4, image_uri=$5, expires_at=$6
+         SET rat_id=$1, rat_name=$2, traits_json=$3::jsonb, metadata_uri=$4, image_uri=$5, expires_at=$6
          WHERE reservation_id=$7`,
-        [ratId, ratName, JSON.stringify(traits), metadataUri, imageUri, expiresAt, reservationId]
+        [ratId, ratName, toJsonb(traits), metadataUri, imageUri, expiresAt, reservationId]
       );
     } else {
       reservationId = uuidv4();
       await query(
         `INSERT INTO mint_reservations
          (reservation_id, trait_fingerprint, user_id, rat_id, rat_name, traits_json, metadata_uri, image_uri, expires_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-        [reservationId, fingerprint, userId, ratId, ratName, JSON.stringify(traits), metadataUri, imageUri, expiresAt]
+         VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9)`,
+        [reservationId, fingerprint, userId, ratId, ratName, toJsonb(traits), metadataUri, imageUri, expiresAt]
       );
     }
 
@@ -220,6 +221,7 @@ router.post('/reserve', auth, rl, async (req, res) => {
       burnAmount: Number(process.env.MINT_BURN_AMOUNT || 10000),
     });
   } catch (err) {
+    console.error('[mint/reserve]', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -309,8 +311,8 @@ router.post('/restore-assets', auth, rl, async (req, res) => {
 
     if (!record.traits_json && traitList) {
       await query(
-        'UPDATE minted_combinations SET traits_json=$1 WHERE mint_address=$2',
-        [JSON.stringify(traitList), mintAddress]
+        'UPDATE minted_combinations SET traits_json=$1::jsonb WHERE mint_address=$2',
+        [toJsonb(traitList), mintAddress]
       );
     }
 
@@ -360,8 +362,8 @@ router.post('/repair-uri', auth, rl, async (req, res) => {
 
     if (!record.traits_json && traitList) {
       await query(
-        'UPDATE minted_combinations SET traits_json=$1 WHERE mint_address=$2',
-        [JSON.stringify(traitList), mintAddress]
+        'UPDATE minted_combinations SET traits_json=$1::jsonb WHERE mint_address=$2',
+        [toJsonb(traitList), mintAddress]
       );
     }
 
@@ -415,7 +417,7 @@ router.post('/confirm', auth, rl, async (req, res) => {
     const ins = await query(
       `INSERT INTO minted_combinations
        (trait_fingerprint, mint_address, metadata_uri, image_uri, minter_wallet, rat_id, user_id, burn_tx, mint_tx, traits_json)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb)
        RETURNING *`,
       [
         reservation.trait_fingerprint,
@@ -427,7 +429,7 @@ router.post('/confirm', auth, rl, async (req, res) => {
         userId,
         burnSignature,
         mintSignature,
-        reservation.traits_json,
+        toJsonb(reservation.traits_json),
       ]
     );
 

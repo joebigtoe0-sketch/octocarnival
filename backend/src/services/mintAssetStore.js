@@ -1,13 +1,14 @@
 const { query } = require('../db');
+const { toJsonb, toBytea } = require('../utils/jsonb');
 
 async function saveMintAssets(fingerprint, metadata, imagePng) {
   await query(
     `INSERT INTO mint_asset_blobs (trait_fingerprint, metadata_json, image_png)
-     VALUES ($1, $2, $3)
+     VALUES ($1, $2::jsonb, $3)
      ON CONFLICT (trait_fingerprint) DO UPDATE
        SET metadata_json = EXCLUDED.metadata_json,
            image_png     = EXCLUDED.image_png`,
-    [fingerprint, metadata, imagePng]
+    [fingerprint, toJsonb(metadata), toBytea(imagePng)]
   );
 }
 
