@@ -174,27 +174,27 @@ router.post('/build', auth, rl, async (req, res) => {
       return res.status(400).json({ error: 'reservationId and walletAddress required' });
     }
 
-    const { rows: [res] } = await query(
+    const { rows: [reservation] } = await query(
       `SELECT * FROM mint_reservations WHERE reservation_id=$1 AND user_id=$2`,
       [reservationId, userId]
     );
-    if (!res) return res.status(404).json({ error: 'Reservation not found' });
-    if (new Date(res.expires_at) < new Date()) {
+    if (!reservation) return res.status(404).json({ error: 'Reservation not found' });
+    if (new Date(reservation.expires_at) < new Date()) {
       return res.status(410).json({ error: 'Reservation expired — start again' });
     }
 
-    const displayName = `ScrapRat — ${res.rat_name || 'Unnamed'}`;
+    const displayName = `ScrapRat — ${reservation.rat_name || 'Unnamed'}`;
     const mintName    = displayName.slice(0, 32);
 
     const burn = await buildBurnTransaction(walletAddress);
     const mint = await buildMintTransaction({
       walletAddress,
-      metadataUri:   res.metadata_uri,
-      name:          mintName,
-      assetSecretKey: res.asset_secret,
+      metadataUri:    reservation.metadata_uri,
+      name:           mintName,
+      assetSecretKey: reservation.asset_secret,
     });
 
-    if (!res.asset_pubkey) {
+    if (!reservation.asset_pubkey) {
       await query(
         'UPDATE mint_reservations SET asset_pubkey=$1, asset_secret=$2 WHERE reservation_id=$3',
         [mint.assetAddress, mint.assetSecret, reservationId]
@@ -210,8 +210,8 @@ router.post('/build', auth, rl, async (req, res) => {
       mintBlockhash:        mint.blockhash,
       mintLastValidHeight:  mint.lastValidBlockHeight,
       burnAmount:           Number(process.env.MINT_BURN_AMOUNT || 10000),
-      metadataUri:          res.metadata_uri,
-      fingerprint:          res.trait_fingerprint,
+      metadataUri:          reservation.metadata_uri,
+      fingerprint:          reservation.trait_fingerprint,
     });
   } catch (err) {
     console.error('[mint/build]', err);
@@ -228,19 +228,19 @@ router.post('/confirm', auth, rl, async (req, res) => {
       return res.status(400).json({ error: 'reservationId, burnSignature, mintSignature, walletAddress required' });
     }
 
-    const { rows: [res] } = await query(
+    const { rows: [reservation] } = await query(
       `SELECT * FROM mint_reservations WHERE reservation_id=$1 AND user_id=$2`,
       [reservationId, userId]
     );
-    if (!res) return res.status(404).json({ error: 'Reservation not found' });
-    if (!res.asset_pubkey) return res.status(400).json({ error: 'Build step required before confirm' });
+    if (!reservation) return res.status(404).json({ error: 'Reservation not found' });
+    if (!reservation.asset_pubkey) return res.status(400).json({ error: 'Build step required before confirm' });
 
     await verifyBurnTransaction(burnSignature, walletAddress);
-    await verifyMintTransaction(mintSignature, res.asset_pubkey);
+    await verifyMintTransaction(mintSignature, reservation.asset_pubkey);
 
     const { rows: [dup] } = await query(
       'SELECT mint_address FROM minted_combinations WHERE trait_fingerprint=$1',
-      [res.trait_fingerprint]
+      [reservation.trait_fingerprint]
     );
     if (dup) {
       return res.status(409).json({ error: 'Already minted', mintAddress: dup.mint_address });
@@ -252,12 +252,12 @@ router.post('/confirm', auth, rl, async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        RETURNING *`,
       [
-        res.trait_fingerprint,
-        res.asset_pubkey,
-        res.metadata_uri,
-        res.image_uri,
+        reservation.trait_fingerprint,
+        reservation.asset_pubkey,
+        reservation.metadata_uri,
+        reservation.image_uri,
         walletAddress,
-        res.rat_id,
+        reservation.rat_id,
         userId,
         burnSignature,
         mintSignature,
