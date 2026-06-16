@@ -25,17 +25,16 @@ healthcheckPath = "/"
 #   JWT_SECRET     = <random 64-char string>
 #   FRONTEND_URL   = https://<your-frontend>.railway.app
 #   GOOGLE_CLIENT_ID = <your Google OAuth client ID>
+#   SOLANA_RPC_URL, METAPLEX_COLLECTION_ADDRESS, MINT_AUTHORITY_SECRET, etc.
 [[services]]
 name = "backend"
-source = "backend"
+source = "."
 
 [services.build]
-command = "npm install"
+command = "npm install -w scraprats-backend && node backend/scripts/bundle-sprites.js && npm rebuild sharp -w scraprats-backend"
 
 [services.deploy]
-# Migrations run on every deploy — safe because all SQL uses IF NOT EXISTS
-# The || true ensures the server still starts even if migration logs an error
-startCommand = "npm run migrate; node src/index.js"
+startCommand = "npm run migrate -w scraprats-backend && npm run start -w scraprats-backend"
 healthcheckPath = "/health"
 
 # ── Plugins ──────────────────────────────────────────────────────────────────

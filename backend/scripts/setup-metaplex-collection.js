@@ -5,7 +5,7 @@
  * Saves collection address to stdout; store in METAPLEX_COLLECTION_ADDRESS env.
  */
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
-const bs58 = require('bs58');
+const bs58 = require('../src/utils/bs58compat');
 
 async function main() {
   const { createUmi } = await import('@metaplex-foundation/umi-bundle-defaults');
@@ -21,7 +21,16 @@ async function main() {
   }
 
   let secretKey;
-  try { secretKey = bs58.decode(secret); } catch { secretKey = Uint8Array.from(JSON.parse(secret)); }
+  const raw = secret.trim();
+  if (raw.startsWith('[')) {
+    secretKey = Uint8Array.from(JSON.parse(raw));
+  } else {
+    secretKey = bs58.decode(raw);
+  }
+  if (secretKey.length < 64) {
+    console.error('Invalid MINT_AUTHORITY_SECRET — expected base58 keypair or JSON byte array');
+    process.exit(1);
+  }
 
   const umi = createUmi(rpc).use(mplCore());
   const kp  = umi.eddsa.createKeypairFromSecretKey(secretKey);

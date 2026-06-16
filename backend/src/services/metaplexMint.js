@@ -6,7 +6,7 @@ const {
   createBurnCheckedInstruction,
   getMint,
 } = require('@solana/spl-token');
-const bs58 = require('bs58');
+const bs58 = require('../utils/bs58compat');
 
 let umiCache = null;
 

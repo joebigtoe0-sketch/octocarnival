@@ -11,9 +11,20 @@
     "dev:backend": "npm run dev --workspace=backend",
     "build:frontend": "npm run build --workspace=frontend",
     "start:backend": "npm run start --workspace=backend",
+    "setup:collection": "npm run setup:collection --workspace=backend",
+    "postinstall": "node backend/scripts/ensure-uuid-cjs.js",
     "crop-sprites": "node scripts/crop-sprites.js"
   },
   "devDependencies": {
     "sharp": "^0.35.0"
+  },
+  "dependencies": {
+    "uuid": "9.0.1"
+  },
+  "overrides": {
+    "uuid": "9.0.1",
+    "rpc-websockets": {
+      "uuid": "9.0.1"
+    }
   }
 }

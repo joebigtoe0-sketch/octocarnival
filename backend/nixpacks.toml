@@ -1,2 +1,17 @@
+[variables]
+NIXPACKS_NODE_VERSION = "20"
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "vips"]
+aptPkgs = ["libvips-dev"]
+
+[phases.install]
+cmds = [
+  "npm install",
+  "node scripts/ensure-uuid-cjs.js",
+  "node scripts/bundle-sprites.js",
+  "npm rebuild sharp"
+]
+
 [start]
-cmd = "node src/db/migrate.js; node src/index.js"
+cmd = "sh start.sh"
