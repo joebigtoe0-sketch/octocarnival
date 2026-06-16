@@ -7,7 +7,8 @@ const PRIVACY = (
       If you create an account we store your email address, a hashed version of your password
       (we never see or store the plain text), your chosen username, and your game progress
       (levels, coins, crew, items and similar game data). If you sign in with Google we receive
-      your email address and name from Google — we never see your Google password.
+      your email address and name from Google — we never see your Google password. If you sign
+      in with a Solana wallet we store your public wallet address to identify your account.
     </p>
     <h3>2. What We Don't Collect</h3>
     <p>
@@ -57,10 +58,14 @@ const TERMS = (
       and exist only within the game. We may rebalance, change or reset game content as the game
       evolves — especially during alpha/beta phases.
     </p>
-    <h3>4. The Token</h3>
+    <h3>4. The Token & NFT Minting</h3>
     <p>
-      Any token associated with ScrapRats is not required to play. Nothing on this site is
-      financial advice. Always do your own research — rats get rugged too.
+      Any token associated with ScrapRats is not required to play. Minting a ScrapRat NFT from
+      your in-game base permanently burns 10,000 $SCRAP from your connected Solana wallet plus
+      SOL network fees. Burned tokens cannot be recovered. NFT metadata reflects your rat's
+      equipped traits at mint time; global uniqueness applies per trait combination. Minted rats
+      remain in your base but cannot be sold, equipped, or swapped.
+      Nothing on this site is financial advice. Always do your own research — rats get rugged too.
     </p>
     <h3>5. Acceptable Use</h3>
     <p>

@@ -616,6 +616,8 @@ export const useGameStore = create(
 
       activateBaseRat(ratId) {
         const { baseRats, activeRat } = get();
+        const rat = baseRats.find(r => r.id === ratId);
+        if (!rat || rat.minted) return;
         const idx = baseRats.findIndex(r => r.id === ratId);
         if (idx === -1) return;
         const newBase = [...baseRats];
@@ -627,7 +629,7 @@ export const useGameStore = create(
         const { baseRats, stats, sellCharges } = get();
         if (sellCharges < 1) return null;
         const rat = baseRats.find(r => r.id === ratId);
-        if (!rat) return null;
+        if (!rat || rat.minted) return null;
         const value = calcSellValue(rat.traits, stats.greed);
         set(s => ({
           coins:      s.coins + value,
@@ -645,6 +647,7 @@ export const useGameStore = create(
         const rat1 = allRats.find(r => r.id === rat1Id);
         const rat2 = allRats.find(r => r.id === rat2Id);
         if (!rat1 || !rat2 || rat1Id === rat2Id) return { error: 'Invalid selection' };
+        if (rat1.minted || rat2.minted) return { error: 'Minted rats cannot swap traits' };
         const t1 = rat1.traits[slotIdx] ?? null;
         const t2 = rat2.traits[slotIdx] ?? null;
         const updated1 = { ...rat1, traits: rat1.traits.map((t, i) => i === slotIdx ? t2 : t) };
@@ -918,6 +921,18 @@ export const useGameStore = create(
         set(s => ({
           crewLeaderId: s.crewLeaderId === ratId ? null : ratId,
         }));
+      },
+
+      // ---- NFT mint ----
+      markRatMinted(ratId, { mintAddress, traitFingerprint, mintedAt }) {
+        set(s => ({
+          baseRats: s.baseRats.map(r =>
+            r.id === ratId
+              ? { ...r, minted: true, mintAddress, traitFingerprint, mintedAt: mintedAt || new Date().toISOString() }
+              : r
+          ),
+        }));
+        get().saveToServer?.();
       },
 
       // ---- bounties ----

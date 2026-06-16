@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import bs58 from 'bs58';
 import { useUiStore }  from '../stores/uiStore.js';
 import { useGameStore } from '../stores/gameStore.js';
 import { authApi, gameApi, setAuthToken } from '../api/client.js';
@@ -20,6 +23,9 @@ export default function AuthModal() {
   const setUser    = useGameStore(s => s.setUser);
   const isGuest    = useGameStore(s => s.isGuest);
   const saveToServer = useGameStore(s => s.saveToServer);
+
+  const wallet = useWallet();
+  const { publicKey, signMessage, connected } = wallet;
 
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -64,13 +70,49 @@ export default function AuthModal() {
 
   async function submit(e) {
     e.preventDefault();
-    setError(''); setLoading(true);
+    setError('');
+    const isRegister = authTab === 'register';
+    if (isRegister && !username.trim()) {
+      setError('Username required for email registration');
+      return;
+    }
+    setLoading(true);
     try {
-      const isRegister = authTab === 'register';
-      const res        = await authApi.email(email, password, isRegister, isRegister ? username : undefined);
+      const res = await authApi.email(email, password, isRegister, isRegister ? username : undefined);
       await handleAuthSuccess(res, username || email.split('@')[0]);
     } catch (err) {
       setError(err.message || 'Something went wrong. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function walletAuth() {
+    if (!publicKey) {
+      setError('Connect your wallet first');
+      return;
+    }
+    if (!signMessage) {
+      setError('This wallet does not support message signing');
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+    try {
+      const walletAddress = publicKey.toBase58();
+      const { message, challengeToken } = await authApi.walletChallenge(walletAddress);
+      const sig = await signMessage(new TextEncoder().encode(message));
+      const res = await authApi.walletLogin({
+        walletAddress,
+        signature:     bs58.encode(sig),
+        challengeToken,
+        username:      authTab === 'register' ? username : undefined,
+        register:      authTab === 'register',
+      });
+      await handleAuthSuccess(res, username || res.username || walletAddress.slice(0, 4));
+    } catch (err) {
+      setError(err.message || 'Wallet sign-in failed');
     } finally {
       setLoading(false);
     }
@@ -138,13 +180,12 @@ export default function AuthModal() {
             <form className="auth-form" onSubmit={submit}>
               {authTab === 'register' && (
                 <div className="auth-field">
-                  <label>Username</label>
+                  <label>Username <span style={{ opacity: 0.6 }}>(optional for wallet)</span></label>
                   <input
                     type="text"
                     placeholder="RatLord420"
                     value={username}
                     onChange={e => setUsername(e.target.value)}
-                    required
                     maxLength={24}
                   />
                 </div>
@@ -177,6 +218,37 @@ export default function AuthModal() {
                 {loading ? 'Loading…' : authTab === 'login' ? 'Login' : 'Register'}
               </button>
             </form>
+
+            {/* Solana wallet auth */}
+            <div className="auth-wallet-wrap">
+              <div className="auth-divider"><span>or</span></div>
+              {!connected ? (
+                <div className="auth-wallet-connect">
+                  <p className="auth-wallet-hint">
+                    {authTab === 'login' ? 'Sign in' : 'Register'} with your Solana wallet
+                  </p>
+                  <WalletMultiButton className="auth-wallet-btn" />
+                </div>
+              ) : (
+                <>
+                  <p className="auth-wallet-hint">
+                    Connected: {publicKey.toBase58().slice(0, 4)}…{publicKey.toBase58().slice(-4)}
+                  </p>
+                  <button
+                    className="auth-submit auth-submit--wallet"
+                    type="button"
+                    disabled={loading}
+                    onClick={walletAuth}
+                  >
+                    {loading
+                      ? 'Confirm in wallet…'
+                      : authTab === 'login'
+                        ? 'Sign in with wallet'
+                        : 'Register with wallet'}
+                  </button>
+                </>
+              )}
+            </div>
 
             {/* Google OAuth */}
             {import.meta.env.VITE_GOOGLE_CLIENT_ID && (

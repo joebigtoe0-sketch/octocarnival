@@ -18,6 +18,8 @@ import LootboxModal     from './LootboxModal.jsx';
 import RotatePrompt     from './RotatePrompt.jsx';
 import { startMusic, playSound, skipTrack, getAudioSettings, subscribeAudio,
          setMusicVolume, setSfxVolume, setMusicMuted, setSfxMuted } from '../audio.js';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 const STAGE_W      = 2000;
 const STAGE_H      = 1000;
@@ -751,6 +753,7 @@ function SettingsModal({ onClose, onReset, prestigeLevel, onPrestige, canPrestig
   const [confirmPrestige, setConfirmPrestige] = React.useState(false);
   const [confirmReset,    setConfirmReset]    = React.useState(false);
   const [audio, setAudio] = React.useState(getAudioSettings);
+  const wallet = useWallet();
   React.useEffect(() => subscribeAudio(setAudio), []);
 
   return (
@@ -828,6 +831,22 @@ function SettingsModal({ onClose, onReset, prestigeLevel, onPrestige, canPrestig
             <button className="minibtn" onClick={onLogout}>LOG OUT</button>
           </div>
         )}
+
+        {/* ── Solana wallet ── */}
+        <div className="modal__section-hd">SOLANA WALLET</div>
+        <div className="modal__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+          <span style={{ color: '#7e9460', fontSize: 12 }}>
+            Connect Phantom to mint ScrapRat NFTs from your base (burns 10,000 $SCRAP).
+          </span>
+          <div className="wallet-btn-wrap">
+            <WalletMultiButton />
+          </div>
+          {wallet.connected && wallet.publicKey && (
+            <span style={{ fontSize: 10, color: '#5a6450', wordBreak: 'break-all' }}>
+              {wallet.publicKey.toBase58()}
+            </span>
+          )}
+        </div>
 
         {/* ── Prestige section ── */}
         <div className="modal__section-hd">PRESTIGE</div>

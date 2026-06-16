@@ -1,3 +1,4 @@
+import './polyfills.js';
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -8,6 +9,7 @@ import LandingPage   from './components/LandingPage.jsx';
 import { useGameStore } from './stores/gameStore.js';
 import { setAuthToken } from './api/client.js';
 import { installDevCheat } from './devCheat.js';
+import SolanaWalletProvider from './components/SolanaWalletProvider.jsx';
 
 // Reattach JWT from persisted store on refresh (cross-domain Railway setup)
 const { token } = useGameStore.getState();
@@ -55,7 +57,9 @@ function AppRoot() {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <AppRoot />
+      <SolanaWalletProvider>
+        <AppRoot />
+      </SolanaWalletProvider>
     </GoogleOAuthProvider>
   </React.StrictMode>
 );

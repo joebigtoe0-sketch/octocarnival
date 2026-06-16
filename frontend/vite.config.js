@@ -21,6 +21,22 @@ function siteMetaPlugin() {
 
 export default defineConfig({
   plugins: [react(), siteMetaPlugin()],
+  define: {
+    global: 'globalThis',
+  },
+  resolve: {
+    alias: {
+      buffer: 'buffer/',
+    },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+    },
+    include: ['buffer'],
+  },
   server: {
     port: 5173,
     proxy: {

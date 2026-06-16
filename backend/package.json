@@ -7,10 +7,18 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "migrate": "node src/db/migrate.js",
-    "seed": "node src/db/seed.js"
+    "seed": "node src/db/seed.js",
+    "test:mint": "node scripts/test-mint-flow.js",
+    "setup:collection": "node scripts/setup-metaplex-collection.js"
   },
   "dependencies": {
+    "@metaplex-foundation/mpl-core": "^1.10.0",
+    "@metaplex-foundation/umi": "^1.5.1",
+    "@metaplex-foundation/umi-bundle-defaults": "^1.5.1",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
     "bcryptjs": "^2.4.3",
+    "bs58": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
@@ -22,6 +30,7 @@
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^3.0.3",
     "pg": "^8.13.3",
+    "sharp": "^0.35.1",
     "socket.io": "^4.8.1",
     "uuid": "^11.0.5"
   }

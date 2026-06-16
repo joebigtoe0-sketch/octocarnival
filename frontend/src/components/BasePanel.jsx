@@ -3,6 +3,7 @@ import { useGameStore } from '../stores/gameStore.js';
 import { RARITY_COLORS, calcSellValue } from '../constants/traits.js';
 import { SLOT_DEFS } from '../constants/traits.js';
 import RatSprite from './RatSprite.jsx';
+import MintModal, { explorerAssetUrl } from './MintModal.jsx';
 import { LEADER_SLOT_STAT, LEADER_RARITY_VALUE, STAT_LABELS } from '../constants/leaderTraits.js';
 
 function InlineName({ value, onSave }) {
@@ -64,10 +65,12 @@ function computeRatBoosts(traits = []) {
   return boosts;
 }
 
-function RatCard({ rat, sellCharges, greed, isLeader, onEquip, onSell, onRename, onAssignLeader }) {
+function RatCard({ rat, sellCharges, greed, isLeader, isGuest, onEquip, onSell, onRename, onAssignLeader, onMinted }) {
   const [detailOpen, setDetailOpen] = useState(false);
+  const [mintOpen,   setMintOpen]   = useState(false);
   const value      = calcSellValue(rat.traits, greed);
-  const canSell    = sellCharges >= 1 && value > 0;
+  const isMinted   = !!rat.minted;
+  const canSell    = !isMinted && sellCharges >= 1 && value > 0;
   const activeSlots = rat.traits.filter(Boolean);
   const ratSeed    = rat.id ? rat.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0;
   const boosts     = computeRatBoosts(activeSlots);
@@ -75,9 +78,10 @@ function RatCard({ rat, sellCharges, greed, isLeader, onEquip, onSell, onRename,
 
   return (
     <>
-      <div className={`base-rat-card plate${isLeader ? ' base-rat-card--leader' : ''}`}>
+      <div className={`base-rat-card plate${isLeader ? ' base-rat-card--leader' : ''}${isMinted ? ' base-rat-card--minted' : ''}`}>
         {/* Crown badge for current crew leader */}
         {isLeader && <div className="base-rat-card__crown" title="Crew Leader"><img src="/assets/icons/crownicon.png" alt="Leader" style={{width:'20px',height:'20px',imageRendering:'pixelated'}} /></div>}
+        {isMinted && <div className="base-rat-card__minted-badge" title="Minted as NFT">MINTED</div>}
 
         {/* Name row */}
         <div className="base-rat-card__name-row">
@@ -96,11 +100,11 @@ function RatCard({ rat, sellCharges, greed, isLeader, onEquip, onSell, onRename,
 
         {/* Action buttons */}
         <div className="base-rat-card__actions">
-          <button className="hirebtn" onClick={onEquip}>EQUIP</button>
+          <button className="hirebtn" disabled={isMinted} title={isMinted ? 'Minted rats cannot be equipped' : undefined} onClick={onEquip}>EQUIP</button>
           <button
             className="hirebtn hirebtn--sell"
             disabled={!canSell}
-            title={!canSell && sellCharges < 1 ? 'No sell charges' : !canSell && value === 0 ? 'Rat has no traits' : undefined}
+            title={isMinted ? 'Minted rats cannot be sold' : !canSell && sellCharges < 1 ? 'No sell charges' : !canSell && value === 0 ? 'Rat has no traits' : undefined}
             onClick={onSell}
           >SELL</button>
         </div>
@@ -165,10 +169,45 @@ function RatCard({ rat, sellCharges, greed, isLeader, onEquip, onSell, onRename,
                 >
                   {isLeader ? '✕ UNASSIGN LEADER' : 'ASSIGN AS CREW LEADER'}
                 </button>
+
+                {/* Mint NFT */}
+                {isMinted ? (
+                  <div style={{ marginTop: 14, textAlign: 'center' }}>
+                    <span style={{ color: 'var(--gold)', fontFamily: 'var(--fnt-pixel)', fontSize: 11 }}>✦ MINTED NFT</span>
+                    {rat.mintAddress && (
+                      <a
+                        href={explorerAssetUrl(rat.mintAddress)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'block', fontSize: 10, marginTop: 6, color: 'var(--toxic)' }}
+                      >
+                        View on explorer ↗
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    className="hirebtn minibtn--gold"
+                    disabled={activeSlots.length === 0 || isGuest}
+                    title={isGuest ? 'Log in to mint NFTs' : activeSlots.length === 0 ? 'Equip traits first' : undefined}
+                    onClick={() => { setDetailOpen(false); setMintOpen(true); }}
+                    style={{ marginTop: 14, width: '100%' }}
+                  >
+                    MINT NFT
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {mintOpen && (
+        <MintModal
+          rat={rat}
+          onClose={() => setMintOpen(false)}
+          onMinted={data => { onMinted(rat.id, data); setMintOpen(false); }}
+        />
       )}
     </>
   );
@@ -203,7 +242,9 @@ function RatSelector({ label, selectedId, allRats, onSelect }) {
       >
         <option value="">Choose a rat…</option>
         {allRats.map(r => (
-          <option key={r.id} value={r.id}>{r.name} ({r.traits.filter(Boolean).length} traits)</option>
+          <option key={r.id} value={r.id} disabled={r.minted}>
+            {r.name} ({r.traits.filter(Boolean).length} traits){r.minted ? ' [MINTED]' : ''}
+          </option>
         ))}
       </select>
     </div>
@@ -220,7 +261,7 @@ function Swapper({ allRats, sellCharges, hasToken, onSwap, onClose }) {
   const rat2 = allRats.find(r => r.id === rat2Id);
   const slot1Trait = rat1?.traits[slotIdx] ?? null;
   const slot2Trait = rat2?.traits[slotIdx] ?? null;
-  const canSwap = rat1Id && rat2Id && rat1Id !== rat2Id && hasToken;
+  const canSwap = rat1Id && rat2Id && rat1Id !== rat2Id && hasToken && !rat1?.minted && !rat2?.minted;
 
   const doSwap = () => {
     const result = onSwap(rat1Id, rat2Id, slotIdx);
@@ -293,7 +334,7 @@ function Swapper({ allRats, sellCharges, hasToken, onSwap, onClose }) {
 export default function BasePanel({ onClose }) {
   const store   = useGameStore();
   const { activeRat, baseRats, stats, sellCharges, maxSellCharges, maxBaseSlots,
-          crewLeaderId, assignCrewLeader } = store;
+          crewLeaderId, assignCrewLeader, markRatMinted, isGuest } = store;
   const maxBase = maxBaseSlots || 3;
   const [swapperOpen, setSwapperOpen] = useState(false);
   const hasToken = store.inventory.some(i => i.key === 'swap_token' && i.quantity > 0);
@@ -364,10 +405,12 @@ export default function BasePanel({ onClose }) {
                     sellCharges={sellCharges}
                     greed={stats.greed}
                     isLeader={crewLeaderId === rat.id}
+                    isGuest={isGuest}
                     onEquip={() => { store.activateBaseRat(rat.id); onClose(); }}
                     onSell={() => store.sellBaseRat(rat.id)}
                     onRename={name => store.renameBaseRat(rat.id, name)}
                     onAssignLeader={assignCrewLeader}
+                    onMinted={markRatMinted}
                   />
                 ))}
                 {Array.from({ length: Math.max(0, maxBase - baseRats.length) }).map((_, i) => (

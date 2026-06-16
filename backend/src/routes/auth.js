@@ -1,7 +1,11 @@
 const express = require('express');
 const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
+const crypto  = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
+const { PublicKey } = require('@solana/web3.js');
+const nacl    = require('tweetnacl');
+const bs58    = require('bs58');
 const { query }  = require('../db');
 const auth       = require('../middleware/auth');
 const { base: rl } = require('../middleware/rateLimit');
@@ -22,6 +26,36 @@ function setCookie(res, token) {
     sameSite: isProd ? 'none' : 'lax', // cross-domain on Railway
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
+}
+
+function buildWalletAuthMessage(walletAddress, nonce) {
+  return [
+    'ScrapRats wants you to sign in with your Solana wallet.',
+    '',
+    `Wallet: ${walletAddress}`,
+    `Nonce: ${nonce}`,
+    '',
+    'This request will not trigger a blockchain transaction or cost any SOL.',
+  ].join('\n');
+}
+
+function verifyWalletSignature(message, signatureBase58, walletAddress) {
+  try {
+    const sig = bs58.decode(signatureBase58);
+    const pub = new PublicKey(walletAddress).toBytes();
+    const msg = new TextEncoder().encode(message);
+    return nacl.sign.detached.verify(msg, sig, pub);
+  } catch {
+    return false;
+  }
+}
+
+function parseWalletAddress(address) {
+  try {
+    return new PublicKey(address).toBase58();
+  } catch {
+    return null;
+  }
 }
 
 async function ensurePlayerState(userId) {
@@ -95,6 +129,84 @@ router.post('/email', rl, async (req, res) => {
   }
 });
 
+// Solana wallet — step 1: issue sign-in challenge
+router.post('/wallet/challenge', rl, async (req, res) => {
+  try {
+    const walletAddress = parseWalletAddress(req.body.walletAddress);
+    if (!walletAddress) return res.status(400).json({ error: 'Invalid wallet address' });
+
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const message = buildWalletAuthMessage(walletAddress, nonce);
+    const challengeToken = jwt.sign(
+      { purpose: 'wallet-auth', wallet: walletAddress, nonce },
+      process.env.JWT_SECRET,
+      { expiresIn: '5m' }
+    );
+
+    res.json({ message, challengeToken });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Solana wallet — step 2: verify signature, login or register
+router.post('/wallet/login', rl, async (req, res) => {
+  try {
+    const { signature, challengeToken, username, register } = req.body;
+    const walletAddress = parseWalletAddress(req.body.walletAddress);
+    if (!walletAddress || !signature || !challengeToken) {
+      return res.status(400).json({ error: 'walletAddress, signature, and challengeToken required' });
+    }
+
+    let payload;
+    try {
+      payload = jwt.verify(challengeToken, process.env.JWT_SECRET);
+    } catch {
+      return res.status(401).json({ error: 'Challenge expired — try again' });
+    }
+    if (payload.purpose !== 'wallet-auth' || payload.wallet !== walletAddress) {
+      return res.status(401).json({ error: 'Invalid challenge' });
+    }
+
+    const message = buildWalletAuthMessage(walletAddress, payload.nonce);
+    if (!verifyWalletSignature(message, signature, walletAddress)) {
+      return res.status(401).json({ error: 'Invalid wallet signature' });
+    }
+
+    let { rows: [user] } = await query('SELECT * FROM users WHERE wallet_address=$1', [walletAddress]);
+
+    if (!user) {
+      if (register === false) {
+        return res.status(404).json({ error: 'No account for this wallet — register first' });
+      }
+      const displayName = username?.trim().slice(0, 24)
+        || `Rat_${walletAddress.slice(0, 4)}`;
+      const ins = await query(
+        `INSERT INTO users (wallet_address, username) VALUES ($1, $2) RETURNING *`,
+        [walletAddress, displayName]
+      );
+      user = ins.rows[0];
+      await ensurePlayerState(user.id);
+    } else if (username?.trim()) {
+      const trimmed = username.trim().slice(0, 24);
+      const upd = await query(
+        'UPDATE users SET username=$1 WHERE id=$2 RETURNING *',
+        [trimmed, user.id]
+      );
+      user = upd.rows[0];
+    }
+
+    const authToken = makeToken(user.id);
+    setCookie(res, authToken);
+    res.json({ token: authToken, userId: user.id, username: user.username, walletAddress });
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Wallet already linked to an account' });
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Guest merge
 router.post('/guest-merge', auth, async (req, res) => {
   try {
@@ -110,7 +222,7 @@ router.post('/guest-merge', auth, async (req, res) => {
 router.get('/me', auth, async (req, res) => {
   try {
     const { rows: [user] } = await query(
-      'SELECT id, email, username, created_at FROM users WHERE id=$1', [req.user.sub]
+      'SELECT id, email, username, wallet_address, created_at FROM users WHERE id=$1', [req.user.sub]
     );
     res.json(user || null);
   } catch (err) {

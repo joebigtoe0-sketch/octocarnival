@@ -12,6 +12,7 @@ const gameRoutes  = require('./routes/game');
 const crewRoutes  = require('./routes/crew');
 const ratsRoutes  = require('./routes/rats');
 const shopRoutes  = require('./routes/shop');
+const mintRoutes  = require('./routes/mint');
 const { initSocket } = require('./socket');
 const { getRedis }   = require('./db');
 
@@ -36,6 +37,7 @@ app.use('/api/game',     gameRoutes);
 app.use('/api/crew',     crewRoutes);
 app.use('/api/rats',     ratsRoutes);
 app.use('/api/shop',     shopRoutes);
+app.use('/api/mint',     mintRoutes);
 
 // ---- Socket.io ----
 initSocket(io);

@@ -22,6 +22,8 @@ api.interceptors.response.use(
 export const authApi = {
   google:     token       => api.post('/auth/google', { token }),
   email:      (email, pw, register, username) => api.post('/auth/email', { email, password: pw, register, username }),
+  walletChallenge: walletAddress => api.post('/auth/wallet/challenge', { walletAddress }),
+  walletLogin: data => api.post('/auth/wallet/login', data),
   logout:     ()          => api.post('/auth/logout'),
   guestMerge: saveData    => api.post('/auth/guest-merge', { saveData }),
   me:         ()          => api.get('/auth/me'),
@@ -52,6 +54,13 @@ export const ratsApi = {
 export const shopApi = {
   daily:  ()              => api.get('/shop/daily'),
   buy:    (itemKey, qty)  => api.post('/shop/buy', { itemKey, quantity: qty }),
+};
+
+export const mintApi = {
+  check:   traits          => api.post('/mint/check', { traits }, { timeout: 30000 }),
+  reserve: data            => api.post('/mint/reserve', data, { timeout: 120000 }),
+  build:   data            => api.post('/mint/build', data, { timeout: 60000 }),
+  confirm: data            => api.post('/mint/confirm', data, { timeout: 60000 }),
 };
 
 /** Call after login to attach JWT to all future requests (for cross-domain Railway). */

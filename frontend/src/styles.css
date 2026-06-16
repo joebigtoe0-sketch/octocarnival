@@ -1863,6 +1863,20 @@ button, .navbtn, .hirebtn, .ratbtn, .sellbtn, .gearbtn, .itemstab, .popup__close
 }
 .auth-submit:hover:not(:disabled){ filter:brightness(1.1); }
 .auth-submit:disabled{ opacity:.45; cursor:not-allowed; }
+.auth-submit--wallet{
+  margin-top:8px;
+  background:linear-gradient(180deg,#6b4fd4 0%,#4a2fa8 100%);
+  box-shadow:0 3px 0 #2a1860, inset 0 1px 0 rgba(255,255,255,.15);
+}
+.auth-wallet-wrap{ margin-top:14px; }
+.auth-wallet-connect{ display:flex; flex-direction:column; align-items:stretch; gap:8px; }
+.auth-wallet-hint{ font-size:11px; color:#7e9460; margin:0; text-align:center; }
+.auth-wallet-wrap .wallet-adapter-button{
+  width:100%!important; justify-content:center!important;
+  font-family:var(--fnt-pixel)!important; font-size:11px!important;
+  background:linear-gradient(180deg,#6b4fd4 0%,#4a2fa8 100%)!important;
+  border-radius:6px!important; height:auto!important; padding:12px 16px!important;
+}
 .auth-guest-note{
   font-size:10px; color:#4a5a38; text-align:center; margin:12px 0 0; line-height:1.5;
 }
@@ -2660,4 +2674,26 @@ html { scroll-behavior: smooth; }
   box-shadow:0 3px 0 #1c3a0a;
 }
 .legal-modal__back:hover{ filter:brightness(1.1); }
+
+/* Solana wallet adapter overrides */
+.wallet-btn-wrap .wallet-adapter-button{
+  font-family:var(--fnt-pixel)!important; font-size:11px!important;
+  background:var(--toxic-deep)!important; color:#0c1408!important;
+  border-radius:6px!important; height:auto!important; line-height:1.4!important;
+  padding:10px 16px!important;
+}
+.wallet-btn-wrap .wallet-adapter-button-trigger{ background:var(--toxic-deep)!important; }
+
+/* Minted rat badge */
+.base-rat-card--minted{ border-color:var(--gold); }
+.base-rat-card__minted-badge{
+  position:absolute; top:6px; left:6px; z-index:2;
+  font-family:var(--fnt-pixel); font-size:9px; letter-spacing:1px;
+  background:rgba(0,0,0,.7); color:var(--gold); padding:3px 6px; border-radius:3px;
+  border:1px solid var(--gold);
+}
+.mint-modal{ max-width:420px; }
+.mint-modal__actions{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+.mint-modal__cost{ font-family:var(--fnt-pixel); font-size:11px; margin:0 0 8px; }
+.mint-modal__fp{ font-size:10px; color:#5a6450; margin:4px 0 0; }
 
