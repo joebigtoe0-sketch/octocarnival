@@ -62,6 +62,7 @@ export const mintApi = {
   reserve: data            => api.post('/mint/reserve', data, { timeout: 120000 }),
   build:   data            => api.post('/mint/build', data, { timeout: 60000 }),
   confirm: data            => api.post('/mint/confirm', data, { timeout: 60000 }),
+  restoreAssets: data      => api.post('/mint/restore-assets', data, { timeout: 120000 }),
   repairUri: data          => api.post('/mint/repair-uri', data, { timeout: 60000 }),
 };
 

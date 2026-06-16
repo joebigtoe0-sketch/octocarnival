@@ -7,7 +7,8 @@ const { query } = require('../db');
 const auth = require('../middleware/auth');
 const { base: rl } = require('../middleware/rateLimit');
 const { traitFingerprint } = require('../utils/traitFingerprint');
-const { prepareMintMetadata, MINTS_DIR, upscaleMintPng } = require('../services/ratMetadata');
+const { prepareMintMetadata, ensureMintAssets, MINTS_DIR, upscaleMintPng } = require('../services/ratMetadata');
+const { loadMintAssets } = require('../services/mintAssetStore');
 const {
   buildBurnTransaction,
   buildMintTransaction,
@@ -35,11 +36,22 @@ function assetBaseUrl(req) {
 
 function patchMetadataUrls(metadata, fingerprint, req) {
   const base = assetBaseUrl(req);
-  metadata.image = `${base}/api/mint/assets/${fingerprint}/image.png?v=512`;
+  metadata.image = `${base}/api/mint/assets/${fingerprint}/image.png`;
   if (metadata.properties?.files) {
     metadata.properties.files = [{ uri: metadata.image, type: 'image/png' }];
   }
   return metadata;
+}
+
+function sameAssetUri(a, b) {
+  if (!a || !b) return false;
+  try {
+    const ua = new URL(a);
+    const ub = new URL(b);
+    return `${ua.origin}${ua.pathname}` === `${ub.origin}${ub.pathname}`;
+  } catch {
+    return a === b;
+  }
 }
 
 async function purgeExpiredReservations() {
@@ -53,16 +65,24 @@ router.get('/assets/:fingerprint/:file', async (req, res) => {
   if (!['metadata.json', 'image.png'].includes(file)) return res.status(404).json({ error: 'Not found' });
 
   const filePath = path.join(MINTS_DIR, fingerprint, file);
-  if (!fs.existsSync(filePath)) {
+  const stored   = await loadMintAssets(fingerprint);
+
+  if (!stored && !fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'Asset not found' });
   }
 
   res.set('Access-Control-Allow-Origin', '*');
-  res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  res.set('Cache-Control', 'public, max-age=3600');
 
   if (file === 'metadata.json') {
     try {
-      const metadata = patchMetadataUrls(JSON.parse(fs.readFileSync(filePath, 'utf8')), fingerprint, req);
+      let metadata;
+      if (stored) {
+        metadata = { ...stored.metadata };
+      } else {
+        metadata = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      }
+      metadata = patchMetadataUrls(metadata, fingerprint, req);
       return res.type('application/json').json(metadata);
     } catch (e) {
       console.error('[mint/assets] metadata read error', e.message);
@@ -71,8 +91,8 @@ router.get('/assets/:fingerprint/:file', async (req, res) => {
   }
 
   try {
-    const raw = fs.readFileSync(filePath);
-    const png = await upscaleMintPng(raw);
+    const raw = stored ? stored.imagePng : fs.readFileSync(filePath);
+    const png = await upscaleMintPng(Buffer.from(raw));
     res.type('image/png');
     return res.send(png);
   } catch (e) {
@@ -265,10 +285,55 @@ router.post('/build', auth, rl, async (req, res) => {
   }
 });
 
+/** Rebuild missing PNG/metadata in Postgres (no wallet tx — use when on-chain URI is already correct). */
+router.post('/restore-assets', auth, rl, async (req, res) => {
+  try {
+    const { mintAddress, traits, ratName } = req.body;
+    const userId = req.user.sub;
+
+    if (!mintAddress) return res.status(400).json({ error: 'mintAddress required' });
+
+    const { rows: [record] } = await query(
+      'SELECT * FROM minted_combinations WHERE mint_address=$1 AND user_id=$2',
+      [mintAddress, userId]
+    );
+    if (!record) return res.status(404).json({ error: 'Mint not found for your account' });
+
+    const traitList = record.traits_json || traits;
+    if (!Array.isArray(traitList) || traitList.filter(Boolean).length === 0) {
+      return res.status(400).json({ error: 'Traits required to rebuild missing artwork' });
+    }
+
+    const rat = { id: record.rat_id, name: ratName || 'ScrapRat', traits: traitList };
+    await ensureMintAssets(rat, record.trait_fingerprint, baseUrl(req));
+
+    if (!record.traits_json && traitList) {
+      await query(
+        'UPDATE minted_combinations SET traits_json=$1 WHERE mint_address=$2',
+        [JSON.stringify(traitList), mintAddress]
+      );
+    }
+
+    const metadataUri = `${assetBaseUrl(req)}/api/mint/assets/${record.trait_fingerprint}/metadata.json`;
+    const imageUri    = `${assetBaseUrl(req)}/api/mint/assets/${record.trait_fingerprint}/image.png`;
+
+    res.json({
+      restored:     true,
+      metadataUri,
+      imageUri,
+      fingerprint:  record.trait_fingerprint,
+      onChainUriOk: sameAssetUri(record.metadata_uri, metadataUri),
+    });
+  } catch (err) {
+    console.error('[mint/restore-assets]', err);
+    res.status(500).json({ error: err.message || 'Restore failed' });
+  }
+});
+
 /** Fix broken metadata URI on an already-minted NFT (wallet signs as update authority). */
 router.post('/repair-uri', auth, rl, async (req, res) => {
   try {
-    const { mintAddress, walletAddress } = req.body;
+    const { mintAddress, walletAddress, traits, ratName } = req.body;
     const userId = req.user.sub;
 
     if (!mintAddress || !walletAddress) {
@@ -280,6 +345,25 @@ router.post('/repair-uri', auth, rl, async (req, res) => {
       [mintAddress, userId]
     );
     if (!record) return res.status(404).json({ error: 'Mint not found for your account' });
+
+    const traitList = record.traits_json || traits;
+    if (!Array.isArray(traitList) || traitList.filter(Boolean).length === 0) {
+      return res.status(400).json({ error: 'Traits required to rebuild missing artwork' });
+    }
+
+    const rat = {
+      id:     record.rat_id,
+      name:   ratName || 'ScrapRat',
+      traits: traitList,
+    };
+    await ensureMintAssets(rat, record.trait_fingerprint, baseUrl(req));
+
+    if (!record.traits_json && traitList) {
+      await query(
+        'UPDATE minted_combinations SET traits_json=$1 WHERE mint_address=$2',
+        [JSON.stringify(traitList), mintAddress]
+      );
+    }
 
     const metadataUri = `${assetBaseUrl(req)}/api/mint/assets/${record.trait_fingerprint}/metadata.json`;
     const tx = await buildUpdateUriTransaction({
@@ -330,8 +414,8 @@ router.post('/confirm', auth, rl, async (req, res) => {
 
     const ins = await query(
       `INSERT INTO minted_combinations
-       (trait_fingerprint, mint_address, metadata_uri, image_uri, minter_wallet, rat_id, user_id, burn_tx, mint_tx)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       (trait_fingerprint, mint_address, metadata_uri, image_uri, minter_wallet, rat_id, user_id, burn_tx, mint_tx, traits_json)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        RETURNING *`,
       [
         reservation.trait_fingerprint,
@@ -343,6 +427,7 @@ router.post('/confirm', auth, rl, async (req, res) => {
         userId,
         burnSignature,
         mintSignature,
+        reservation.traits_json,
       ]
     );
 

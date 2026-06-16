@@ -10,23 +10,37 @@ import { signAndSend } from '../utils/solanaTx.js';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { LEADER_SLOT_STAT, LEADER_RARITY_VALUE, STAT_LABELS } from '../constants/leaderTraits.js';
 
-function RepairNftButton({ mintAddress }) {
+function RepairNftButton({ mintAddress, rat }) {
   const { connection } = useConnection();
   const wallet         = useWallet();
   const [status, setStatus] = useState('');
   const [busy, setBusy]       = useState(false);
 
   const repair = async () => {
-    if (!wallet.publicKey || !wallet.signTransaction) {
-      setStatus('Connect wallet in Settings first');
-      return;
-    }
     setBusy(true);
-    setStatus('Building repair transaction…');
+    setStatus('Rebuilding artwork…');
     try {
+      const restored = await mintApi.restoreAssets({
+        mintAddress,
+        traits:  rat?.traits,
+        ratName: rat?.name,
+      });
+
+      if (restored.onChainUriOk) {
+        setStatus('Artwork restored — check Solscan/Phantom in 1–2 min');
+        return;
+      }
+
+      if (!wallet.publicKey || !wallet.signTransaction) {
+        setStatus('Connect wallet in Settings to fix on-chain URI');
+        return;
+      }
+      setStatus('Building repair transaction…');
       const built = await mintApi.repairUri({
         mintAddress,
         walletAddress: wallet.publicKey.toBase58(),
+        traits:  rat?.traits,
+        ratName: rat?.name,
       });
       setStatus('Sign in wallet…');
       await signAndSend(connection, wallet, built.transaction, built.lastValidBlockHeight);
@@ -44,7 +58,7 @@ function RepairNftButton({ mintAddress }) {
         type="button"
         className="hirebtn"
         style={{ width: '100%', marginTop: 8, fontSize: 10 }}
-        disabled={busy || !wallet.connected}
+        disabled={busy}
         onClick={repair}
       >
         FIX NFT IMAGE
@@ -224,7 +238,7 @@ function RatCard({ rat, sellCharges, greed, isLeader, isGuest, onEquip, onSell, 
                           View on explorer ↗
                         </a>
                       )}
-                      {rat.mintAddress && <RepairNftButton mintAddress={rat.mintAddress} />}
+                      {rat.mintAddress && <RepairNftButton mintAddress={rat.mintAddress} rat={rat} />}
                     </div>
                   ) : isGuest ? (
                     <button

@@ -5,6 +5,7 @@ const {
   SPRITE_LAYERS, resolveSpriteFile, spritePath, buildSlotMap,
 } = require('../constants/ratSprites');
 const { normalizePublicUrl } = require('../utils/publicUrl');
+const { saveMintAssets, loadMintAssets } = require('../services/mintAssetStore');
 
 const MINTS_DIR = path.join(__dirname, '../../uploads/mints');
 const NFT_IMAGE_SIZE = 512;
@@ -97,7 +98,7 @@ async function uploadToStorage(fingerprint, metadata, pngBuffer, baseUrl) {
   const imagePath     = path.join(dir, imageFilename);
   fs.writeFileSync(imagePath, pngBuffer);
 
-  const imageUri = `${publicBase}/api/mint/assets/${fingerprint}/${imageFilename}?v=512`;
+  const imageUri = `${publicBase}/api/mint/assets/${fingerprint}/${imageFilename}`;
   metadata.image = imageUri;
   if (metadata.properties?.files) {
     metadata.properties.files = [{ uri: imageUri, type: 'image/png' }];
@@ -107,6 +108,8 @@ async function uploadToStorage(fingerprint, metadata, pngBuffer, baseUrl) {
   fs.writeFileSync(jsonPath, JSON.stringify(metadata, null, 2));
 
   const metadataUri = `${publicBase}/api/mint/assets/${fingerprint}/metadata.json`;
+
+  await saveMintAssets(fingerprint, metadata, pngBuffer);
 
   // Optional NFT.Storage upload
   if (process.env.IPFS_TOKEN) {
@@ -162,12 +165,23 @@ async function prepareMintMetadata(rat, fingerprint, baseUrl) {
   return uris;
 }
 
+/** Rebuild PNG + metadata in Postgres when Railway disk was wiped. */
+async function ensureMintAssets(rat, fingerprint, baseUrl) {
+  const stored = await loadMintAssets(fingerprint);
+  if (stored) return stored;
+  await prepareMintMetadata(rat, fingerprint, baseUrl);
+  const rebuilt = await loadMintAssets(fingerprint);
+  if (!rebuilt) throw new Error('Failed to persist mint assets');
+  return rebuilt;
+}
+
 module.exports = {
   buildMetadataJson,
   renderRatImage,
   upscaleMintPng,
   uploadToStorage,
   prepareMintMetadata,
+  ensureMintAssets,
   MINTS_DIR,
   NFT_IMAGE_SIZE,
 };

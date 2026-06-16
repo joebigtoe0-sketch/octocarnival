@@ -125,9 +125,9 @@ async function buildMintTransaction({ walletAddress, metadataUri, name, assetSec
   };
 }
 
-/** Fix on-chain metadata URI (wallet must sign as update authority). */
+/** Fix on-chain metadata URI (server update authority + wallet fee payer). */
 async function buildUpdateUriTransaction({ walletAddress, assetAddress, metadataUri, name }) {
-  const { umi } = await getUmi();
+  const { umi, authority } = await getUmi();
   const { update, fetchAsset, fetchCollection } = await import('@metaplex-foundation/mpl-core');
   const { createNoopSigner, publicKey } = await import('@metaplex-foundation/umi');
 
@@ -147,12 +147,13 @@ async function buildUpdateUriTransaction({ walletAddress, assetAddress, metadata
     asset,
     collection,
     payer,
+    authority,
     name: name || asset.name,
     uri:  metadataUri,
   });
 
   const blockhash = await umi.rpc.getLatestBlockhash();
-  const builtTx   = await txBuilder.setBlockhash(blockhash).build(umi);
+  const builtTx   = await txBuilder.setBlockhash(blockhash).buildAndSign(umi);
   const serialized = umi.transactions.serialize(builtTx);
 
   return {
