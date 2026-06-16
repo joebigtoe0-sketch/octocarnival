@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { VersionedTransaction } from '@solana/web3.js';
 import { mintApi } from '../api/client.js';
 import { NETWORK, TOKEN_SYMBOL } from '../constants/solana.js';
+import { signAndSend } from '../utils/solanaTx.js';
 import RatSprite from './RatSprite.jsx';
 
 const BURN_AMOUNT = 10_000;
@@ -15,16 +15,6 @@ function explorerTxUrl(sig) {
 function explorerAssetUrl(addr) {
   const cluster = NETWORK === 'mainnet-beta' ? '' : `?cluster=${NETWORK}`;
   return `https://solana.fm/address/${addr}${cluster}`;
-}
-
-async function signAndSend(connection, wallet, base64Tx, blockhash, lastValidBlockHeight) {
-  const raw = Uint8Array.from(atob(base64Tx), c => c.charCodeAt(0));
-  const tx  = VersionedTransaction.deserialize(raw);
-
-  const signed = await wallet.signTransaction(tx);
-  const sig    = await connection.sendRawTransaction(signed.serialize(), { skipPreflight: false });
-  await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed');
-  return sig;
 }
 
 export default function MintModal({ rat, onClose, onMinted }) {
@@ -100,23 +90,38 @@ export default function MintModal({ rat, onClose, onMinted }) {
       setResId(reserve.reservationId);
       setFp(reserve.fingerprint);
 
-      setMessage('Building transactions…');
-      const built = await mintApi.build({
+      const buildFresh = (completedBurnSignature) => mintApi.build({
         reservationId: reserve.reservationId,
         walletAddress: wallet.publicKey.toBase58(),
+        completedBurnSignature,
       });
 
-      setMessage(`Burning ${BURN_AMOUNT.toLocaleString()} ${TOKEN_SYMBOL}…`);
-      const burnSig = await signAndSend(
-        connection, wallet, built.burnTransaction,
-        built.burnBlockhash, built.burnLastValidHeight
+      const pendingBurnKey = `scraprats-burn-${reserve.fingerprint}`;
+      const pendingBurn    = sessionStorage.getItem(pendingBurnKey);
+
+      let burnSig = pendingBurn;
+
+      if (!burnSig) {
+        setMessage(`Sign burn in wallet — ${BURN_AMOUNT.toLocaleString()} ${TOKEN_SYMBOL}…`);
+        const builtBurn = await buildFresh();
+        burnSig = await signAndSend(
+          connection, wallet, builtBurn.burnTransaction,
+          builtBurn.burnLastValidHeight,
+          sig => sessionStorage.setItem(pendingBurnKey, sig),
+        );
+        sessionStorage.setItem(pendingBurnKey, burnSig);
+      } else {
+        setMessage('Resuming — burn already completed, minting NFT…');
+      }
+
+      setMessage('Sign mint in wallet…');
+      const builtMint = await buildFresh(burnSig);
+      const mintSig = await signAndSend(
+        connection, wallet, builtMint.mintTransaction,
+        builtMint.mintLastValidHeight,
       );
 
-      setMessage('Minting NFT…');
-      const mintSig = await signAndSend(
-        connection, wallet, built.mintTransaction,
-        built.mintBlockhash, built.mintLastValidHeight
-      );
+      sessionStorage.removeItem(pendingBurnKey);
 
       setMessage('Confirming on server…');
       const confirmed = await mintApi.confirm({

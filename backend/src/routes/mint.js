@@ -167,7 +167,7 @@ router.post('/reserve', auth, rl, async (req, res) => {
 
 router.post('/build', auth, rl, async (req, res) => {
   try {
-    const { reservationId, walletAddress } = req.body;
+    const { reservationId, walletAddress, completedBurnSignature } = req.body;
     const userId = req.user.sub;
 
     if (!reservationId || !walletAddress) {
@@ -186,7 +186,13 @@ router.post('/build', auth, rl, async (req, res) => {
     const displayName = `ScrapRat — ${reservation.rat_name || 'Unnamed'}`;
     const mintName    = displayName.slice(0, 32);
 
-    const burn = await buildBurnTransaction(walletAddress);
+    let burn = null;
+    if (completedBurnSignature) {
+      await verifyBurnTransaction(completedBurnSignature, walletAddress);
+    } else {
+      burn = await buildBurnTransaction(walletAddress);
+    }
+
     const mint = await buildMintTransaction({
       walletAddress,
       metadataUri:    reservation.metadata_uri,
@@ -202,11 +208,12 @@ router.post('/build', auth, rl, async (req, res) => {
     }
 
     res.json({
-      burnTransaction:      burn.transaction,
+      skipBurn:             !!completedBurnSignature,
+      burnTransaction:      burn?.transaction ?? null,
       mintTransaction:      mint.transaction,
       assetAddress:         mint.assetAddress,
-      burnBlockhash:        burn.blockhash,
-      burnLastValidHeight:  burn.lastValidBlockHeight,
+      burnBlockhash:        burn?.blockhash ?? null,
+      burnLastValidHeight:  burn?.lastValidBlockHeight ?? null,
       mintBlockhash:        mint.blockhash,
       mintLastValidHeight:  mint.lastValidBlockHeight,
       burnAmount:           Number(process.env.MINT_BURN_AMOUNT || 10000),

@@ -16,3 +16,10 @@ export function getRpcEndpoint() {
   }
   return clusterApiUrl(NETWORK);
 }
+
+/** Public Solana WS for wallet subscriptions — HTTP RPC stays on our proxy. */
+export function getWsEndpoint() {
+  return NETWORK === 'mainnet-beta'
+    ? 'wss://api.mainnet-beta.solana.com/'
+    : 'wss://api.devnet.solana.com/';
+}
