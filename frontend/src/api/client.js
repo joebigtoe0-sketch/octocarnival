@@ -58,6 +58,7 @@ export const shopApi = {
 
 export const mintApi = {
   check:   traits          => api.post('/mint/check', { traits }, { timeout: 30000 }),
+  balance: wallet          => api.get(`/mint/balance/${wallet}`, { timeout: 15000 }),
   reserve: data            => api.post('/mint/reserve', data, { timeout: 120000 }),
   build:   data            => api.post('/mint/build', data, { timeout: 60000 }),
   confirm: data            => api.post('/mint/confirm', data, { timeout: 60000 }),

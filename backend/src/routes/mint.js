@@ -13,6 +13,7 @@ const {
   verifyBurnTransaction,
   verifyMintTransaction,
 } = require('../services/metaplexMint');
+const { fetchTokenBalance, DEFAULT_MINT } = require('../utils/tokenBalance');
 
 const router = express.Router();
 
@@ -39,6 +40,21 @@ router.get('/assets/:fingerprint/:file', (req, res) => {
   res.sendFile(filePath, err => {
     if (err) res.status(404).json({ error: 'Asset not found' });
   });
+});
+
+router.get('/balance/:wallet', rl, async (req, res) => {
+  try {
+    const { wallet } = req.params;
+    if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
+      return res.status(400).json({ error: 'Invalid wallet address' });
+    }
+    const mint = process.env.SCRAP_MINT_ADDRESS || DEFAULT_MINT;
+    const balance = await fetchTokenBalance(wallet, mint);
+    res.json({ balance, mint });
+  } catch (e) {
+    console.error('[mint/balance]', e.message);
+    res.status(500).json({ error: 'Could not fetch token balance' });
+  }
 });
 
 router.post('/check', rl, async (req, res) => {

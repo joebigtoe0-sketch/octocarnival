@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { VersionedTransaction } from '@solana/web3.js';
 import { mintApi } from '../api/client.js';
-import { NETWORK, TOKEN_SYMBOL, fetchScrapTokenBalance } from '../constants/solana.js';
+import { NETWORK, TOKEN_SYMBOL } from '../constants/solana.js';
 import RatSprite from './RatSprite.jsx';
 
 const BURN_AMOUNT = 10_000;
@@ -66,7 +66,7 @@ export default function MintModal({ rat, onClose, onMinted }) {
     }
     setBalanceError(null);
     try {
-      const balance = await fetchScrapTokenBalance(connection, wallet.publicKey);
+      const { balance } = await mintApi.balance(wallet.publicKey.toBase58());
       setScrap(balance);
     } catch (e) {
       setScrap(null);
