@@ -7,7 +7,7 @@ const { query } = require('../db');
 const auth = require('../middleware/auth');
 const { base: rl } = require('../middleware/rateLimit');
 const { traitFingerprint } = require('../utils/traitFingerprint');
-const { prepareMintMetadata, MINTS_DIR } = require('../services/ratMetadata');
+const { prepareMintMetadata, MINTS_DIR, upscaleMintPng } = require('../services/ratMetadata');
 const {
   buildBurnTransaction,
   buildMintTransaction,
@@ -35,7 +35,7 @@ function assetBaseUrl(req) {
 
 function patchMetadataUrls(metadata, fingerprint, req) {
   const base = assetBaseUrl(req);
-  metadata.image = `${base}/api/mint/assets/${fingerprint}/image.png`;
+  metadata.image = `${base}/api/mint/assets/${fingerprint}/image.png?v=512`;
   if (metadata.properties?.files) {
     metadata.properties.files = [{ uri: metadata.image, type: 'image/png' }];
   }
@@ -47,7 +47,7 @@ async function purgeExpiredReservations() {
 }
 
 // Serve mint metadata + images (public — wallets/explorers fetch these)
-router.get('/assets/:fingerprint/:file', (req, res) => {
+router.get('/assets/:fingerprint/:file', async (req, res) => {
   const { fingerprint, file } = req.params;
   if (!/^[a-f0-9]{64}$/.test(fingerprint)) return res.status(400).json({ error: 'Invalid fingerprint' });
   if (!['metadata.json', 'image.png'].includes(file)) return res.status(404).json({ error: 'Not found' });
@@ -70,8 +70,15 @@ router.get('/assets/:fingerprint/:file', (req, res) => {
     }
   }
 
-  res.type('image/png');
-  return res.sendFile(filePath);
+  try {
+    const raw = fs.readFileSync(filePath);
+    const png = await upscaleMintPng(raw);
+    res.type('image/png');
+    return res.send(png);
+  } catch (e) {
+    console.error('[mint/assets] image read error', e.message);
+    return res.status(500).json({ error: 'Image unavailable' });
+  }
 });
 
 router.get('/balance/:wallet', rl, async (req, res) => {

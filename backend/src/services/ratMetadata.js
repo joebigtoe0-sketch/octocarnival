@@ -7,6 +7,7 @@ const {
 const { normalizePublicUrl } = require('../utils/publicUrl');
 
 const MINTS_DIR = path.join(__dirname, '../../uploads/mints');
+const NFT_IMAGE_SIZE = 512;
 
 function ensureMintsDir() {
   fs.mkdirSync(MINTS_DIR, { recursive: true });
@@ -68,6 +69,19 @@ async function renderRatImage(traits, seed = 0) {
   return sharp(layerPaths[0])
     .resize(w, h)
     .composite(composites)
+    .resize(NFT_IMAGE_SIZE, NFT_IMAGE_SIZE, { kernel: sharp.kernel.nearest })
+    .png()
+    .toBuffer();
+}
+
+/** Upscale legacy small composites for wallet/explorer display (min ~512px). */
+async function upscaleMintPng(buffer) {
+  const meta = await sharp(buffer).metadata();
+  if ((meta.width || 0) >= NFT_IMAGE_SIZE && (meta.height || 0) >= NFT_IMAGE_SIZE) {
+    return buffer;
+  }
+  return sharp(buffer)
+    .resize(NFT_IMAGE_SIZE, NFT_IMAGE_SIZE, { kernel: sharp.kernel.nearest })
     .png()
     .toBuffer();
 }
@@ -83,7 +97,7 @@ async function uploadToStorage(fingerprint, metadata, pngBuffer, baseUrl) {
   const imagePath     = path.join(dir, imageFilename);
   fs.writeFileSync(imagePath, pngBuffer);
 
-  const imageUri = `${publicBase}/api/mint/assets/${fingerprint}/${imageFilename}`;
+  const imageUri = `${publicBase}/api/mint/assets/${fingerprint}/${imageFilename}?v=512`;
   metadata.image = imageUri;
   if (metadata.properties?.files) {
     metadata.properties.files = [{ uri: imageUri, type: 'image/png' }];
@@ -151,7 +165,9 @@ async function prepareMintMetadata(rat, fingerprint, baseUrl) {
 module.exports = {
   buildMetadataJson,
   renderRatImage,
+  upscaleMintPng,
   uploadToStorage,
   prepareMintMetadata,
   MINTS_DIR,
+  NFT_IMAGE_SIZE,
 };
