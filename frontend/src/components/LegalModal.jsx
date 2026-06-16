@@ -61,7 +61,7 @@ const TERMS = (
     <h3>4. The Token & NFT Minting</h3>
     <p>
       Any token associated with ScrapRats is not required to play. Minting a ScrapRat NFT from
-      your in-game base permanently burns 10,000 $SCRAP from your connected Solana wallet plus
+      your in-game base permanently burns 10,000 $scraprat from your connected Solana wallet plus
       SOL network fees. Burned tokens cannot be recovered. NFT metadata reflects your rat's
       equipped traits at mint time; global uniqueness applies per trait combination. Minted rats
       remain in your base but cannot be sold, equipped, or swapped.

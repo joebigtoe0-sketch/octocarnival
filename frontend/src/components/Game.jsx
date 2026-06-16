@@ -19,6 +19,7 @@ import RotatePrompt     from './RotatePrompt.jsx';
 import { startMusic, playSound, skipTrack, getAudioSettings, subscribeAudio,
          setMusicVolume, setSfxVolume, setMusicMuted, setSfxMuted } from '../audio.js';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { TOKEN_SYMBOL } from '../constants/solana.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 
 const STAGE_W      = 2000;
@@ -816,7 +817,7 @@ function SettingsModal({ onClose, onReset, prestigeLevel, onPrestige, canPrestig
         <div className="modal__section-hd">SOLANA WALLET</div>
         <div className="modal__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
           <span style={{ color: '#7e9460', fontSize: 12 }}>
-            Connect Phantom to mint ScrapRat NFTs from Base (burns 10,000 $SCRAP).
+            Connect Phantom to mint ScrapRat NFTs from Base (burns 10,000 {TOKEN_SYMBOL}).
             Wallet login/register is also in the Login / Register popup.
           </span>
           <div className="wallet-btn-wrap">

@@ -4,7 +4,9 @@ import AboutShuffleRat from './AboutShuffleRat.jsx';
 
 // ── Official links ──────────────────────────────────────────────────────────
 // Single source of truth — every pump.fun link and the contract box use this.
-export const CONTRACT_ADDRESS = '6wDhSCLLZRQMJQwafEtoyBz4u9tQnYDwJMs98cYHpump';
+import { SCRAP_MINT_ADDRESS, TOKEN_SYMBOL } from '../constants/solana.js';
+
+export const CONTRACT_ADDRESS = SCRAP_MINT_ADDRESS;
 
 export const SOCIAL_LINKS = {
   discord: 'https://discord.gg/h6Qdw3aNWK',
@@ -194,7 +196,7 @@ export default function LandingPage() {
 
             <div className="lp-panel lp-contract">
               <Rivets />
-              <div className="lp-contract__lbl">$SCRAP · PUMP.FUN CONTRACT ADDRESS (SOLANA)</div>
+              <div className="lp-contract__lbl">{TOKEN_SYMBOL} · PUMP.FUN CONTRACT ADDRESS (SOLANA)</div>
               <div className="lp-contract__row">
                 <code className="lp-contract__addr">{CONTRACT_ADDRESS}</code>
                 <CopyButton text={CONTRACT_ADDRESS} />

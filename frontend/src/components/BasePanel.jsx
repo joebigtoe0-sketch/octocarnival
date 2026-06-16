@@ -4,6 +4,7 @@ import { RARITY_COLORS, calcSellValue } from '../constants/traits.js';
 import { SLOT_DEFS } from '../constants/traits.js';
 import RatSprite from './RatSprite.jsx';
 import MintModal, { explorerAssetUrl } from './MintModal.jsx';
+import { TOKEN_SYMBOL } from '../constants/solana.js';
 import { LEADER_SLOT_STAT, LEADER_RARITY_VALUE, STAT_LABELS } from '../constants/leaderTraits.js';
 
 function InlineName({ value, onSave }) {
@@ -193,7 +194,7 @@ function RatCard({ rat, sellCharges, greed, isLeader, isGuest, onEquip, onSell, 
                       onClick={() => { setDetailOpen(false); setMintOpen(true); }}
                       style={{ width: '100%' }}
                     >
-                      MINT NFT — 10,000 $SCRAP
+                      MINT NFT — 10,000 {TOKEN_SYMBOL}
                     </button>
                   )}
                 </div>

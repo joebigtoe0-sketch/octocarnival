@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { VersionedTransaction, PublicKey } from '@solana/web3.js';
+import { VersionedTransaction } from '@solana/web3.js';
 import { mintApi } from '../api/client.js';
-import { CONTRACT_ADDRESS } from './LandingPage.jsx';
-import { NETWORK } from './SolanaWalletProvider.jsx';
+import { NETWORK, TOKEN_SYMBOL, fetchScrapTokenBalance } from '../constants/solana.js';
 import RatSprite from './RatSprite.jsx';
 
 const BURN_AMOUNT = 10_000;
-const SCRAP_MINT  = import.meta.env.VITE_SCRAP_MINT_ADDRESS || CONTRACT_ADDRESS;
 
 function explorerTxUrl(sig) {
   const cluster = NETWORK === 'mainnet-beta' ? '' : `?cluster=${NETWORK}`;
@@ -38,6 +36,7 @@ export default function MintModal({ rat, onClose, onMinted }) {
   const [fingerprint, setFp]      = useState(null);
   const [available, setAvailable] = useState(true);
   const [scrapBalance, setScrap]  = useState(null);
+  const [balanceError, setBalanceError] = useState(null);
   const [reservationId, setResId] = useState(null);
   const [mintResult, setResult]   = useState(null);
 
@@ -60,14 +59,18 @@ export default function MintModal({ rat, onClose, onMinted }) {
   }, [rat.traits]);
 
   const checkScrapBalance = useCallback(async () => {
-    if (!wallet.publicKey) { setScrap(null); return; }
+    if (!wallet.publicKey) {
+      setScrap(null);
+      setBalanceError(null);
+      return;
+    }
+    setBalanceError(null);
     try {
-      const mint = new PublicKey(SCRAP_MINT);
-      const { value } = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, { mint });
-      if (!value.length) { setScrap(0); return; }
-      setScrap(value[0].account.data.parsed.info.tokenAmount.uiAmount ?? 0);
-    } catch {
-      setScrap(0);
+      const balance = await fetchScrapTokenBalance(connection, wallet.publicKey);
+      setScrap(balance);
+    } catch (e) {
+      setScrap(null);
+      setBalanceError(e.message || 'Could not load token balance');
     }
   }, [wallet.publicKey, connection]);
 
@@ -79,7 +82,9 @@ export default function MintModal({ rat, onClose, onMinted }) {
     && activeSlots.length > 0
     && !rat.minted
     && available
-    && (scrapBalance === null || scrapBalance >= BURN_AMOUNT);
+    && !balanceError
+    && scrapBalance !== null
+    && scrapBalance >= BURN_AMOUNT;
 
   const startMint = async () => {
     if (!wallet.publicKey) return;
@@ -101,7 +106,7 @@ export default function MintModal({ rat, onClose, onMinted }) {
         walletAddress: wallet.publicKey.toBase58(),
       });
 
-      setMessage(`Burning ${BURN_AMOUNT.toLocaleString()} $SCRAP…`);
+      setMessage(`Burning ${BURN_AMOUNT.toLocaleString()} ${TOKEN_SYMBOL}…`);
       const burnSig = await signAndSend(
         connection, wallet, built.burnTransaction,
         built.burnBlockhash, built.burnLastValidHeight
@@ -150,12 +155,18 @@ export default function MintModal({ rat, onClose, onMinted }) {
 
             <div className="mint-modal__info">
               <p className="mint-modal__cost">
-                Cost: <strong>{BURN_AMOUNT.toLocaleString()} $SCRAP</strong> burned + SOL gas
+                Cost: <strong>{BURN_AMOUNT.toLocaleString()} {TOKEN_SYMBOL}</strong> burned + SOL gas
               </p>
               {wallet.connected && scrapBalance !== null && (
                 <p className="mint-modal__balance" style={{ color: scrapBalance >= BURN_AMOUNT ? 'var(--toxic)' : '#e05050' }}>
-                  Your balance: {scrapBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} $SCRAP
+                  Your balance: {scrapBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} {TOKEN_SYMBOL}
                 </p>
+              )}
+              {wallet.connected && balanceError && (
+                <p className="mint-modal__balance" style={{ color: '#e05050' }}>{balanceError}</p>
+              )}
+              {wallet.connected && scrapBalance === null && !balanceError && (
+                <p className="mint-modal__hint">Loading balance…</p>
               )}
               {!wallet.connected && (
                 <p className="mint-modal__hint">Connect wallet in Settings first.</p>
@@ -204,7 +215,7 @@ export default function MintModal({ rat, onClose, onMinted }) {
           </div>
 
           <p className="mint-modal__disclaimer">
-            Burns 10,000 $SCRAP permanently. Rat stays in your base but cannot be sold, equipped, or swapped.
+            Burns 10,000 {TOKEN_SYMBOL} permanently. Rat stays in your base but cannot be sold, equipped, or swapped.
           </p>
         </div>
       </div>
