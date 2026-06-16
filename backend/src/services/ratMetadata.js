@@ -4,6 +4,7 @@ const sharp = require('sharp');
 const {
   SPRITE_LAYERS, resolveSpriteFile, spritePath, buildSlotMap,
 } = require('../constants/ratSprites');
+const { normalizePublicUrl } = require('../utils/publicUrl');
 
 const MINTS_DIR = path.join(__dirname, '../../uploads/mints');
 
@@ -22,7 +23,7 @@ function buildMetadataJson(rat, fingerprint) {
   return {
     name:        `ScrapRat — ${rat.name || 'Unnamed'}`,
     symbol:      'SCRAPRAT',
-    description: 'A trait-forged ScrapRat minted from the ScrapRats sewer. Burned 10,000 $SCRAP to claim this unique combo.',
+    description: 'A trait-forged ScrapRat minted from the ScrapRats sewer. Burned 10,000 $scraprat to claim this unique combo.',
     image:       '', // filled after image upload
     external_url: 'https://scraprats.io',
     attributes,
@@ -76,11 +77,13 @@ async function uploadToStorage(fingerprint, metadata, pngBuffer, baseUrl) {
   const dir = path.join(MINTS_DIR, fingerprint);
   fs.mkdirSync(dir, { recursive: true });
 
+  const publicBase = normalizePublicUrl(baseUrl);
+
   const imageFilename = 'image.png';
   const imagePath     = path.join(dir, imageFilename);
   fs.writeFileSync(imagePath, pngBuffer);
 
-  const imageUri = `${baseUrl}/api/mint/assets/${fingerprint}/${imageFilename}`;
+  const imageUri = `${publicBase}/api/mint/assets/${fingerprint}/${imageFilename}`;
   metadata.image = imageUri;
   if (metadata.properties?.files) {
     metadata.properties.files = [{ uri: imageUri, type: 'image/png' }];
@@ -89,7 +92,7 @@ async function uploadToStorage(fingerprint, metadata, pngBuffer, baseUrl) {
   const jsonPath = path.join(dir, 'metadata.json');
   fs.writeFileSync(jsonPath, JSON.stringify(metadata, null, 2));
 
-  const metadataUri = `${baseUrl}/api/mint/assets/${fingerprint}/metadata.json`;
+  const metadataUri = `${publicBase}/api/mint/assets/${fingerprint}/metadata.json`;
 
   // Optional NFT.Storage upload
   if (process.env.IPFS_TOKEN) {

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path    = require('path');
+const fs      = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { query } = require('../db');
 const auth = require('../middleware/auth');
@@ -10,36 +11,67 @@ const { prepareMintMetadata, MINTS_DIR } = require('../services/ratMetadata');
 const {
   buildBurnTransaction,
   buildMintTransaction,
+  buildUpdateUriTransaction,
   verifyBurnTransaction,
   verifyMintTransaction,
 } = require('../services/metaplexMint');
 const { fetchTokenBalance, DEFAULT_MINT } = require('../utils/tokenBalance');
+const { normalizePublicUrl } = require('../utils/publicUrl');
 
 const router = express.Router();
 
 const RESERVATION_TTL_MS = 5 * 60 * 1000;
 
 function baseUrl(req) {
-  if (process.env.PUBLIC_BACKEND_URL) return process.env.PUBLIC_BACKEND_URL.replace(/\/$/, '');
+  if (process.env.PUBLIC_BACKEND_URL) return normalizePublicUrl(process.env.PUBLIC_BACKEND_URL);
   const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
   const host  = req.headers['x-forwarded-host'] || req.get('host');
   return `${proto}://${host}`;
+}
+
+function assetBaseUrl(req) {
+  return normalizePublicUrl(process.env.PUBLIC_BACKEND_URL) || baseUrl(req);
+}
+
+function patchMetadataUrls(metadata, fingerprint, req) {
+  const base = assetBaseUrl(req);
+  metadata.image = `${base}/api/mint/assets/${fingerprint}/image.png`;
+  if (metadata.properties?.files) {
+    metadata.properties.files = [{ uri: metadata.image, type: 'image/png' }];
+  }
+  return metadata;
 }
 
 async function purgeExpiredReservations() {
   await query('DELETE FROM mint_reservations WHERE expires_at < NOW()');
 }
 
-// Serve mint metadata + images
+// Serve mint metadata + images (public — wallets/explorers fetch these)
 router.get('/assets/:fingerprint/:file', (req, res) => {
   const { fingerprint, file } = req.params;
   if (!/^[a-f0-9]{64}$/.test(fingerprint)) return res.status(400).json({ error: 'Invalid fingerprint' });
   if (!['metadata.json', 'image.png'].includes(file)) return res.status(404).json({ error: 'Not found' });
 
   const filePath = path.join(MINTS_DIR, fingerprint, file);
-  res.sendFile(filePath, err => {
-    if (err) res.status(404).json({ error: 'Asset not found' });
-  });
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'Asset not found' });
+  }
+
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Cache-Control', 'public, max-age=31536000, immutable');
+
+  if (file === 'metadata.json') {
+    try {
+      const metadata = patchMetadataUrls(JSON.parse(fs.readFileSync(filePath, 'utf8')), fingerprint, req);
+      return res.type('application/json').json(metadata);
+    } catch (e) {
+      console.error('[mint/assets] metadata read error', e.message);
+      return res.status(500).json({ error: 'Metadata unavailable' });
+    }
+  }
+
+  res.type('image/png');
+  return res.sendFile(filePath);
 });
 
 router.get('/balance/:wallet', rl, async (req, res) => {
@@ -223,6 +255,42 @@ router.post('/build', auth, rl, async (req, res) => {
   } catch (err) {
     console.error('[mint/build]', err);
     res.status(500).json({ error: err.message || err.name || 'Mint build failed' });
+  }
+});
+
+/** Fix broken metadata URI on an already-minted NFT (wallet signs as update authority). */
+router.post('/repair-uri', auth, rl, async (req, res) => {
+  try {
+    const { mintAddress, walletAddress } = req.body;
+    const userId = req.user.sub;
+
+    if (!mintAddress || !walletAddress) {
+      return res.status(400).json({ error: 'mintAddress and walletAddress required' });
+    }
+
+    const { rows: [record] } = await query(
+      'SELECT * FROM minted_combinations WHERE mint_address=$1 AND user_id=$2',
+      [mintAddress, userId]
+    );
+    if (!record) return res.status(404).json({ error: 'Mint not found for your account' });
+
+    const metadataUri = `${assetBaseUrl(req)}/api/mint/assets/${record.trait_fingerprint}/metadata.json`;
+    const tx = await buildUpdateUriTransaction({
+      walletAddress,
+      assetAddress: mintAddress,
+      metadataUri,
+    });
+
+    res.json({
+      metadataUri,
+      imageUri:     `${assetBaseUrl(req)}/api/mint/assets/${record.trait_fingerprint}/image.png`,
+      transaction:  tx.transaction,
+      blockhash:    tx.blockhash,
+      lastValidBlockHeight: tx.lastValidBlockHeight,
+    });
+  } catch (err) {
+    console.error('[mint/repair-uri]', err);
+    res.status(500).json({ error: err.message || 'Repair failed' });
   }
 });
 

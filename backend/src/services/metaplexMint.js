@@ -125,6 +125,44 @@ async function buildMintTransaction({ walletAddress, metadataUri, name, assetSec
   };
 }
 
+/** Fix on-chain metadata URI (wallet must sign as update authority). */
+async function buildUpdateUriTransaction({ walletAddress, assetAddress, metadataUri, name }) {
+  const { umi } = await getUmi();
+  const { update, fetchAsset, fetchCollection } = await import('@metaplex-foundation/mpl-core');
+  const { createNoopSigner, publicKey } = await import('@metaplex-foundation/umi');
+
+  const asset = await fetchAsset(umi, publicKey(assetAddress));
+  const collectionAddr = process.env.METAPLEX_COLLECTION_ADDRESS;
+  let collection;
+  if (collectionAddr) {
+    try {
+      collection = await fetchCollection(umi, publicKey(collectionAddr));
+    } catch {
+      collection = undefined;
+    }
+  }
+
+  const payer = createNoopSigner(publicKey(walletAddress));
+  const txBuilder = update(umi, {
+    asset,
+    collection,
+    payer,
+    name: name || asset.name,
+    uri:  metadataUri,
+  });
+
+  const blockhash = await umi.rpc.getLatestBlockhash();
+  const builtTx   = await txBuilder.setBlockhash(blockhash).build(umi);
+  const serialized = umi.transactions.serialize(builtTx);
+
+  return {
+    transaction:          Buffer.from(serialized).toString('base64'),
+    blockhash:            blockhash.blockhash,
+    lastValidBlockHeight: blockhash.lastValidBlockHeight,
+    metadataUri,
+  };
+}
+
 async function verifyBurnTransaction(signature, walletAddress) {
   const connection = getConnection();
   const tx = await connection.getParsedTransaction(signature, {
@@ -177,6 +215,7 @@ module.exports = {
   getUmi,
   buildBurnTransaction,
   buildMintTransaction,
+  buildUpdateUriTransaction,
   verifyBurnTransaction,
   verifyMintTransaction,
   getBurnAmountBaseUnits,
